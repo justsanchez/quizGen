@@ -1,68 +1,139 @@
 import React, { useState } from "react";
-// import { invokeBedrockModel } from "../services/bedrock"; // Import the Bedrock service
+import { invokeDeepSeek } from "../services/deepSeek"; // Import the Bedrock service
+import "../styles/HomePage.css"; // Import external CSS
 
 export default function HomePage() {
   const [input, setInput] = useState(""); 
-  const [response, setResponse] = useState(""); 
+  const [response, setResponse] = useState(null); 
   const [isLoading, setIsLoading] = useState(false); 
+
+  // Developing locally, so we'll use a placeholder response instead of exhausting the model
+  const [isDeveloping] = useState(true);
+  const [selectedModel, setSelectedModel] = useState("deepseek-chat"); // New model selection state
+
+  const invokeModel = async (input) => {
+    if (selectedModel === "deepseek-chat") {
+      return await invokeDeepSeek(input);
+    }
+    // Future models can be added here
+
+
+    throw new Error(`Model ${selectedModel} not yet implemented.`);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault(); 
     setIsLoading(true); 
 
-    try {
+    let deepSeekResponseRaw;
+    let response;
 
-      // const response = await invokeBedrockModel(input);
-      // setResponse(response.results[0].outputText);
-    
+    try {
+      if (!isDeveloping) {
+        deepSeekResponseRaw = await invokeModel(input);
+      }
+
+      console.log("Model response | Raw response:", deepSeekResponseRaw);
+
+      if (isDeveloping) {
+        response = {
+          "quiz": [
+            {
+              "question": "What is the primary role of a router in a network?",
+              "options": [
+                "A. To store data permanently",
+                "B. To forward data packets between computers in the network",
+                "C. To cool down the servers",
+                "D. To provide long-term storage for files"
+              ],
+              "correct": "B",
+              "explanation": "A router is a device that forwards data packets between computers in a network, ensuring that the data reaches its intended destination."
+            }
+          ]
+        };
+      } else {
+        const cleanedResponse = deepSeekResponseRaw.replace(/```json|```/g, "").trim();
+        response = JSON.parse(cleanedResponse);
+      }
+
+      console.log("Model response | Parsed response:", response);
+
+      if (response.quiz && Array.isArray(response.quiz)) {
+        console.log("Model response | response.quiz:", response.quiz);
+        console.log("First Question:", response.quiz[0]);
+        setResponse(response.quiz);  
+      } else {
+        console.error("Unexpected response format:", response);
+        setResponse([]);  
+      }
     } catch (error) {
-      console.error("Error invoking Bedrock model:", error);
-      setResponse("An error occurred. Please try again."); // Handle errors
+      console.error("Error parsing JSON from model:", error);
+      setResponse([]);  
     } finally {
-      setIsLoading(false); // Reset loading state
+      setIsLoading(false); 
     }
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center p-4">
-      <h2 className="text-3xl font-bold mb-6 text-gray-800">Amazon Bedrock Demo</h2>
+    <div className="homepage-container">
+      {!response && (
+        <>
+          <h2 className="homepage-title">AI Quiz Generator</h2>
+          <form onSubmit={handleSubmit} className="homepage-form">
+            <div className="form-group">
+              <label htmlFor="model">Select Model:</label>
+              <select 
+                id="model" 
+                value={selectedModel} 
+                onChange={(e) => setSelectedModel(e.target.value)}
+                className="model-select"
+              >
+                <option value="deepseek-chat">DeepSeek Chat</option>
+                <option value="deepseek-reasoner">DeepSeek Reasoner</option>
+                <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option>
+              </select>
+            </div>
 
+            <div className="form-group">
+              <label htmlFor="input">Enter your prompt here:</label>
+              <textarea
+                id="input"
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                placeholder="Enter transcript..."
+                rows={10}
+                required
+              />
+            </div>
 
-      <form onSubmit={handleSubmit} className="bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4 w-full max-w-md">
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="input">
-            Enter your prompt:
-          </label>
-          <textarea
-            className="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-            id="input"
-            type="paragraph"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter transcript..."
-            rows={10} // Adjusts height
-            required
-          />
+            <button type="submit" className="submit-button" disabled={isLoading}>
+              {isLoading ? "Generating..." : "Submit"}
+            </button>
+          </form>
+        </>
+      )}
+
+      {/* Displaying Quiz Questions */}
+      {response && response.length > 0 && (
+        <div className="quiz-container">
+          <h2 className="homepage-title">Generated Quiz:</h2>
+          {response.map((q, index) => (
+            <div key={index} className="quiz-question">
+              <p className="question-text">
+                <strong>Q{index + 1}: </strong> {q.question}
+              </p>
+              <ul className="options-list">
+                {q.options.map((option, i) => (
+                  <li key={i} className={option.includes("[CORRECT]") ? "correct-answer" : ""}>
+                    {option.replace("[CORRECT]", "").trim()}
+                  </li>
+                ))}
+              </ul>
+              <p className="explanation"><strong>Explanation:</strong> {q.explanation}</p>
+            </div>
+          ))}
         </div>
-
-        <div className="flex items-center justify-between">
-          <button
-            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-            type="submit"
-            disabled={isLoading} // Disable button while loading
-          >
-            {isLoading ? "Generating..." : "Submit"}
-          </button>
-        </div>
-      </form>
-
-      <div>Under Development.</div>
-      {/* {response && (
-        <div className="mt-6 bg-white shadow-md rounded px-8 pt-6 pb-8 w-full max-w-md">
-          <h3 className="text-xl font-bold mb-4 text-gray-800">Response:</h3>
-          <p className="text-gray-700">{response}</p>
-        </div>
-      )} */}
+      )}
     </div>
   );
 }

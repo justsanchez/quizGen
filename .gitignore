@@ -21,3 +21,6 @@ dist/
 *.ntvs*
 *.njsproj
 *.sln
+
+# AWS
+AWSCLIV2.pkg
