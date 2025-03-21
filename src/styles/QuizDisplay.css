@@ -1,0 +1,81 @@
+.option-item {
+    padding: 12px;
+    margin: 8px 0;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  
+  .option-item:hover {
+    background-color: #f8f9fa;
+  }
+  
+  .option-item.selected {
+    border-color: #2196f3;
+    background-color: #e3f2fd;
+  }
+  
+  .option-item.correct {
+    border-color: #4caf50;
+    background-color: #e8f5e9;
+  }
+  
+  .option-item.incorrect {
+    border-color: #f44336;
+    background-color: #ffebee;
+  }
+  
+  .correct-marker {
+    color: #4caf50;
+    font-weight: bold;
+    margin-left: 8px;
+  }
+  
+  .correct-badge {
+    color: #4caf50;
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+  }
+  
+  .incorrect-badge {
+    color: #f44336;
+    display: block;
+    margin-top: 8px;
+    font-weight: bold;
+  }
+  
+  .explanation {
+    margin-top: 16px;
+    padding: 12px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #2196f3;
+  }
+
+  /* Add to your QuizDisplay.css */
+.correct-tag {
+    color: #4caf50;
+    margin-left: 10px;
+    font-weight: bold;
+  }
+  
+  .option-item.disabled {
+    opacity: 0.7;
+  }
+  
+  .option-item.disabled:hover {
+    background-color: none;
+  }
+  
+  .correct-badge {
+    color: #4caf50;
+    font-weight: bold;
+  }
+  
+  .incorrect-badge {
+    color: #f44336;
+    font-weight: bold;
+  }
