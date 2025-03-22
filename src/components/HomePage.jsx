@@ -1,7 +1,8 @@
 import React, { useState } from "react";
-import { invokeDeepSeek } from "../services/deepSeek"; // Import the Bedrock service
+import { invokeDeepSeekQuizGenerator } from "../services/deepSeek"; // Import the Bedrock service
 import "../styles/HomePage.css"; // Import external CSS
 import QuizDisplay from "./QuizDisplay.jsx"; // Import the QuizDisplay component
+import Navbar from "./NavBar.jsx";
 
 export default function HomePage() {
   const [input, setInput] = useState(""); 
@@ -15,7 +16,7 @@ export default function HomePage() {
   
   const invokeModel = async (input) => {
     if (selectedModel === "deepseek-chat") {
-      return await invokeDeepSeek(input);
+      return await invokeDeepSeekQuizGenerator(input);
     }
     // Future models can be added here
 
@@ -177,10 +178,15 @@ export default function HomePage() {
   };
 
   return (
+
     <div className="homepage-container">
+      <Navbar />
+      <>{isDeveloping && (<h1 className="text-red-500 pt-15">Developing Mode</h1>)}</>
+
       {!response && (
         <>
-          <h2 className="homepage-title">AI Quiz Generator</h2>
+          <h2 className="homepage-title pt-15">AI Quiz Generator</h2>
+          
           <form onSubmit={handleSubmit} className="homepage-form">
             <div className="form-group">
               <label htmlFor="model">Select Model:</label>
@@ -229,13 +235,15 @@ export default function HomePage() {
         </>
       )}
 
-      {/* Displaying Quiz Questions */}
-      {response && response.length > 0 && (
-               <QuizDisplay 
-               response={response}
-               selectedMode={selectedMode}
-             />
-      )}
+    {/* Displaying Quiz Questions */}
+{response && response.length > 0 && (
+  <div className="pt-15">
+    <QuizDisplay 
+      response={response}
+      selectedMode={selectedMode}
+    />
+  </div>
+)}
     </div>
   );
 }

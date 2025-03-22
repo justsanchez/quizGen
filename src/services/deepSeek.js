@@ -16,12 +16,8 @@ const openai = new OpenAI({
         dangerouslyAllowBrowser: true // ! only for development
 });
 
-
-
-
-
 // Function to invoke a Bedrock model
-export const invokeDeepSeek = async (transcript) => {
+export const invokeDeepSeekQuizGenerator = async (transcript) => {
     // const input = {
     //     modelId: "deepseek.r1-v1:0",
     //     contentType: "application/json",
@@ -40,14 +36,13 @@ export const invokeDeepSeek = async (transcript) => {
     //   };
 
     let difficulty = "medium";
-    let numQuestions = 10;
+    let numQuestions = 12;
     let prompt = `
     Generate a ${difficulty} difficulty quiz with ${numQuestions} questions with this transcript.
     ${transcript}
     For each question:
     1. Phrase as a multiple choice question
     2. Provide 4 answer options
-    3. Mark the correct answer with [CORRECT]
     4. Add a brief explanation
     5. Include relevant AWS service names if applicable in the explanation
 
