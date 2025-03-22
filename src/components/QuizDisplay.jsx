@@ -10,7 +10,10 @@ export default function QuizDisplay({ response, selectedMode }) {
     const correctIndex = getCorrectAnswerIndex(response[questionIndex]);
     const isCorrect = optionIndex === correctIndex;
 
-    setSelectedAnswers(prev => ({ ...prev, [questionIndex]: optionIndex }));
+setSelectedAnswers(prev => ({
+    ...prev,
+    [questionIndex]: [...(prev[questionIndex] || []), optionIndex]
+  }));
     setShowExplanations(prev => ({ ...prev, [questionIndex]: true }));
     
     if (isCorrect) {
@@ -41,30 +44,31 @@ export default function QuizDisplay({ response, selectedMode }) {
             </p>
             
             <ul className="options-list">
-              {q.options.map((option, optionIndex) => {
-                const isSelected = selectedAnswers[questionIndex] === optionIndex;
-                const isCorrectOption = optionIndex === correctAnswerIndex;
-                const showResult = hasAnswered && (isCorrect || isSelected);
+  {q.options.map((option, optionIndex) => {
+    const wasSelected = selectedAnswers[questionIndex]?.includes(optionIndex);
+    const isCorrectOption = optionIndex === correctAnswerIndex;
+    const isLatestSelection = selectedAnswers[questionIndex]?.slice(-1)[0] === optionIndex;
+    const showAsIncorrect = wasSelected && !isCorrectOption;
+    const showAsCorrect = isCorrectOption && (isCorrect || wasSelected);
 
-                return (
-                  <li
-                    key={optionIndex}
-                    className={`
-                      option-item 
-                      ${isSelected ? 'selected' : ''}
-                      ${showResult ? (isCorrectOption ? 'correct' : 'incorrect') : ''}
-                      ${isCorrect ? 'disabled' : ''}
-                    `}
-                    onClick={!isCorrect ? () => handleAnswerSelect(questionIndex, optionIndex) : undefined}
-                  >
-                    {option}
-                    {showResult && isCorrectOption && (
-                      <span className="correct-marker"> ✓</span>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
+    return (
+      <li
+        key={optionIndex}
+        className={`
+          option-item 
+          ${isLatestSelection ? 'selected' : ''}
+          ${showAsCorrect ? 'correct' : ''}
+          ${showAsIncorrect ? 'incorrect' : ''}
+          ${isCorrect ? 'disabled' : ''}
+        `}
+        onClick={!isCorrect ? () => handleAnswerSelect(questionIndex, optionIndex) : undefined}
+      >
+        {option}
+        {showAsCorrect && <span className="correct-marker"> ✓</span>}
+      </li>
+    );
+  })}
+</ul>
 
             {isCorrect && (
             showExplanations[questionIndex] && (
