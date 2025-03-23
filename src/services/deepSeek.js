@@ -16,24 +16,8 @@ const openai = new OpenAI({
         dangerouslyAllowBrowser: true // ! only for development
 });
 
-// Function to invoke a Bedrock model
-export const invokeDeepSeekQuizGenerator = async (transcript) => {
-    // const input = {
-    //     modelId: "deepseek.r1-v1:0",
-    //     contentType: "application/json",
-    //     accept: "application/json",
-    //     body: JSON.stringify({
-    //       inferenceConfig: {
-    //         max_tokens: 512,   
-    //       },
-    //       messages: [
-    //         {
-    //           role: "user",
-    //           content: prompt  // Use the actual user input
-    //         }
-    //       ]
-    //     }),
-    //   };
+
+export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => {
 
     let difficulty = "medium";
     let numQuestions = 12;
@@ -61,7 +45,7 @@ export const invokeDeepSeekQuizGenerator = async (transcript) => {
     try {
 
       const completion = await openai.chat.completions.create({
-        model: "deepseek-chat", 
+        model: selectedModel, 
         messages: [
           { role: "system", content: "You are a helpful AI quiz generator that follows structured JSON formatting." },
           { role: "user", content: prompt } 
@@ -75,4 +59,32 @@ export const invokeDeepSeekQuizGenerator = async (transcript) => {
     console.error("Error invoking Bedrock model:", error);
     throw error;
   }
+};
+
+export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) => {
+
+  let prompt = `
+I am studying for the AWS AI Practitioner Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
+ Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
+  ${transcript}
+  `;
+
+  // Return a summary in md by default but explicitly say that
+
+  try {
+
+    const completion = await openai.chat.completions.create({
+      model: selectedModel, 
+      messages: [
+        { role: "system", content: "You are a helpful AI summary generator that follows instructions." },
+        { role: "user", content: prompt } 
+      ],
+    });
+
+
+  return completion.choices[0].message.content;
+} catch (error) {
+  console.error("Error invoking Bedrock model:", error);
+  throw error;
+}
 };
