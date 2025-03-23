@@ -63,13 +63,14 @@ export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => 
 
 export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) => {
 
+  // TODO: maybe make the prompt customizable or leave as default as a option
+
   let prompt = `
 I am studying for the AWS AI Practitioner Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
  Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
   ${transcript}
   `;
 
-  // Return a summary in md by default but explicitly say that
 
   try {
 

@@ -12,6 +12,7 @@
   "dependencies": {
     "@aws-sdk/client-bedrock-runtime": "^3.758.0",
     "@tailwindcss/vite": "^4.0.9",
+    "html-react-parser": "^5.2.2",
     "openai": "^4.87.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",

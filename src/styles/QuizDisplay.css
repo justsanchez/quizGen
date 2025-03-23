@@ -10,7 +10,7 @@
 .tab-navigation {
   width: 100%;
   border-bottom: 2px solid #e0e0e0;
-  margin-bottom: 2rem;
+  margin-bottom: 2rem; /* Adding space here if needed */
   position: sticky;
   top: 0;
   background: white;
@@ -59,7 +59,12 @@
 /* Tab Content */
 .tab-content {
   width: 100%;
-  padding: 0 20px; /* Add padding here if needed */
+
+  display: flex;
+  justify-content: center; /* Centers horizontally */
+
+
+
 }
 
 .quiz-content,

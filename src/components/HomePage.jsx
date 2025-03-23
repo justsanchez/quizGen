@@ -4,6 +4,8 @@ import { invokeDeepSeekQuizGenerator, invokeDeepSeekSummaryGenerator } from "../
 import "../styles/HomePage.css"; // Import external CSS
 import QuizDisplay from "./QuizDisplay.jsx"; // Import the QuizDisplay component
 import Navbar from "./NavBar.jsx";
+import parse from "html-react-parser";
+
 
 export default function HomePage() {
   const [input, setInput] = useState(""); 
@@ -13,8 +15,9 @@ export default function HomePage() {
 
   const [isLoading, setIsLoading] = useState(false); 
 
-  // Developing locally, so we'll use a placeholder response instead of exhausting the model
+  // ! Developing locally, so we'll use a placeholder response instead of exhausting the model
   const [isDeveloping] = useState(true);
+
   const [selectedModel, setSelectedModel] = useState("deepseek-chat"); // New model selection state
   const [selectedMode, setSelectedMode] = useState("learning"); // New model selection state
 
@@ -283,8 +286,9 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       } else {
         const cleanedQuizResponse = deepSeekQuizResponseRaw.replace(/```json|```/g, "").trim();
         console.log('deepSeekSummaryResponseRaw: ', deepSeekSummaryResponseRaw);
-
-        setSummary(deepSeekSummaryResponseRaw);
+        
+        const cleanedSummaryResponse = deepSeekSummaryResponseRaw.replace(/```html|```/g, "").trim();
+        setSummary(cleanedSummaryResponse);
         response = JSON.parse(cleanedQuizResponse);
       }
 
@@ -316,7 +320,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
       {!response && (
         <>
-          <h2 className="homepage-title pt-15">AI Quiz Generator</h2>
+          <h2 className="homepage-title pt-15">AWS AI Quiz Generator</h2>
           
           <form onSubmit={handleSubmit} className="homepage-form">
             <div className="form-group">
@@ -371,8 +375,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     {response && response.length > 0 && (
       // todo: fix this to be dynamic, top-30 is not a good solution
       <div className="content-container">
-        {/* Improved Tab Navigation */}
-        <div className="tab-navigation bg-white shadow-sm z-50 mt-16"> {/* Add mt-16 (4rem) */}
+        {/* mt-3 */}
+        <div className="bg-white shadow-sm z-50 mt-3"> 
       <div className="tab-buttons-container">
         <button
           className={`tab-button ${activeTab === 'quiz' ? 'active' : ''}`}
@@ -391,21 +395,30 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     </div>
 
     {/* Tab Content */}
-    <div className="tab-content">
       {activeTab === 'quiz' ? (
-        <div className="pt-15">
+        <div className="tab-content">
           <QuizDisplay 
             response={response}
             selectedMode={selectedMode}
           />
         </div>
       ) : (
-        <ReactMarkdown >
-        {summary}
-      </ReactMarkdown>
+<div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg leading-relaxed space-y-4">
+<ReactMarkdown
+    components={{
+      h2: ({node, ...props}) => <h2 className="text-3xl font-bold mb-4 mt-6 border-b-2 border-indigo-100 pb-2" {...props} />,
+      h3: ({node, ...props}) => <h3 className="text-2xl font-semibold mb-3 mt-5 text-gray-800" {...props} />,
+      p: ({node, ...props}) => <p className="text-gray-700 mb-4 text-lg" {...props} />,
+      ul: ({node, ...props}) => <ul className="space-y-3 pl-5 list-disc list-outside marker:text-indigo-400" {...props} />,
+      code: ({node, ...props}) => <code className="bg-gray-50 px-2 py-1 rounded-md text-sm font-mono" {...props} />
+    }}
+  >
+    {summary}
+  </ReactMarkdown>
+      </div>
       )}
     </div>
-  </div>
+
 )}
     </div>
   );
