@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../styles/QuizDisplay.css";
+import "../styles/QuizSection.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 
@@ -78,6 +78,11 @@ export default function QuizDisplay({ response, selectedMode }) {
           </div>
         </div>
 
+        {/* Mode Label (Fixed Width) */}
+        <span className=" text-sm font-medium text-gray-700 w-[110px] text-center">
+          {mode === "learning" ? "Learning Mode" : "Testing Mode"}
+        </span>
+
         {/* Toggle Switch */}
         <div
           className="relative inline-flex h-6 w-12 cursor-pointer rounded-full bg-gray-200"
@@ -92,13 +97,9 @@ export default function QuizDisplay({ response, selectedMode }) {
           />
         </div>
 
-        {/* Mode Label (Fixed Width) */}
-        <span className=" text-sm font-medium text-gray-700 w-[110px] text-center">
-          {mode === "learning" ? "Learning Mode" : "Testing Mode"}
-        </span>
       </div>
 
-      <h2 className="homepage-title">Generated Quiz:</h2>
+      <h2 className="quizPage-title">Generated Quiz:</h2>
 
       {response.map((q, questionIndex) => {
         const correctAnswerIndex = getCorrectAnswerIndex(q);

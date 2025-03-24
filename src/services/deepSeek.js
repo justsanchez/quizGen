@@ -71,7 +71,6 @@ I am studying for the AWS AI Practitioner Exam and I want you to make good notes
   ${transcript}
   `;
 
-
   try {
 
     const completion = await openai.chat.completions.create({

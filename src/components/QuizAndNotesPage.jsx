@@ -3,12 +3,11 @@ import ReactMarkdown from "react-markdown";
 import {
   invokeDeepSeekQuizGenerator,
   invokeDeepSeekSummaryGenerator,
-} from "../services/deepSeek";
-import "../styles/HomePage.css";
-import QuizDisplay from "./QuizDisplay.jsx";
-import Navbar from "./NavBar.jsx";
+} from "../services/deepSeek.js";
+import "../styles/QuizAndNotesPage.css";
+import QuizSection from "./QuizSection.jsx";
 
-export default function HomePage() {
+export default function QuizPage() {
   const [input, setInput] = useState("");
   const [response, setResponse] = useState(null);
   const [summary, setSummary] = useState("");
@@ -323,17 +322,16 @@ These notes should help you follow along with Stephan Mareek's video and prepare
   };
 
   return (
-    <div className="homepage-container">
-      <Navbar />
+    <div className="quizPage-container">
       <>
         {isDeveloping && <h1 className="text-red-500 pt-5">Developing Mode</h1>}
       </>
 
       {!response && (
         <>
-          <h2 className="homepage-title pt-15">AWS AI Quiz Generator</h2>
+          <h2 className="quizPage-title pt-15">AWS AI Quiz Generator</h2>
 
-          <form onSubmit={handleSubmit} className="homepage-form">
+          <form onSubmit={handleSubmit} className="quizPage-form">
             <div className="form-group">
               <label htmlFor="model">Select Model:</label>
               <select
@@ -397,7 +395,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           {/* Tab Content */}
           {activeTab === "quiz" ? (
             <div className="tab-content">
-              <QuizDisplay response={response} selectedMode={selectedMode} />
+              <QuizSection response={response} selectedMode={selectedMode} />
             </div>
           ) : (
             // Summary Tab
