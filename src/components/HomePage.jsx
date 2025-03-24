@@ -3,7 +3,7 @@ import ReactMarkdown from "react-markdown";
 import {
   invokeDeepSeekQuizGenerator,
   invokeDeepSeekSummaryGenerator,
-} from "../services/deepSeek"; // Import the deepseek service
+} from "../services/deepSeek";
 import "../styles/HomePage.css";
 import QuizDisplay from "./QuizDisplay.jsx";
 import Navbar from "./NavBar.jsx";
@@ -363,20 +363,17 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
             <button
               type="submit"
-              className="submit-button"
+              className="generate-button"
               disabled={isLoading}
             >
-              {isLoading ? "Generating..." : "Submit"}
+              {isLoading ? "Generating..." : "Generate"}
             </button>
           </form>
         </>
       )}
 
-      {/* Displaying Quiz Questions */}
       {response && response.length > 0 && (
-        // todo: fix this to be dynamic, top-30 is not a good solution
         <div className="content-container">
-          {/* mt-3 */}
           <div className="bg-white shadow-sm z-50 mt-1">
             <div className="tab-buttons-container">
               <button
