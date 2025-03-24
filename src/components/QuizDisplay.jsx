@@ -102,10 +102,7 @@ export default function QuizDisplay({ response, selectedMode }) {
 
       {response.map((q, questionIndex) => {
         const correctAnswerIndex = getCorrectAnswerIndex(q);
-        const userAnswer = selectedAnswers[questionIndex]?.[0];
         const isCorrect = correctlyAnswered[questionIndex];
-        const showExplanation =
-          mode === "learning" ? showExplanations[questionIndex] : submitted;
 
         return (
           <div key={questionIndex} className="quiz-question">
@@ -141,16 +138,19 @@ export default function QuizDisplay({ response, selectedMode }) {
                     className={`
                       option-item
                       ${
-                        mode === "testing" && isSelected
-                          ? "selectedFinalAnswer"
-                          : ""
+                        mode === "testing" && isSelected ? "selectedAnswer" : ""
                       }
                       ${showAsCorrect ? "correct" : ""}
                       ${showAsIncorrect ? "incorrect" : ""}
                       ${mode === "testing" && submitted ? "disabled" : ""}
                     `}
                     onClick={() => {
-                      if (mode === "testing" && submitted) return;
+                      if (
+                        (mode === "testing" && submitted) ||
+                        (mode === "learning" &&
+                          correctlyAnswered[questionIndex])
+                      )
+                        return;
                       handleAnswerSelect(questionIndex, optionIndex);
                     }}
                   >
@@ -163,16 +163,18 @@ export default function QuizDisplay({ response, selectedMode }) {
             {(mode === "learning" && isCorrect) ||
             (mode === "testing" && submitted) ? (
               <div className="explanation">
+                {mode === "learning" && (
+                  <div className="py-1 text-green-600 font-bold">
+                    <span>You got it right!</span>
+                  </div>
+                )}
                 <p>
                   <strong>Explanation:</strong> {q.explanation}
                 </p>
-                {mode === "learning" && (
-                  <div className="feedback">
-                    <span className="correct-badge">You got it right!</span>
-                  </div>
-                )}
               </div>
             ) : null}
+
+          
           </div>
         );
       })}
