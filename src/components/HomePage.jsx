@@ -1,10 +1,9 @@
 import React, { useState } from "react";
 import ReactMarkdown from 'react-markdown';
-import { invokeDeepSeekQuizGenerator, invokeDeepSeekSummaryGenerator } from "../services/deepSeek"; // Import the Bedrock service
-import "../styles/HomePage.css"; // Import external CSS
-import QuizDisplay from "./QuizDisplay.jsx"; // Import the QuizDisplay component
+import { invokeDeepSeekQuizGenerator, invokeDeepSeekSummaryGenerator } from "../services/deepSeek"; // Import the deepseek service
+import "../styles/HomePage.css"; 
+import QuizDisplay from "./QuizDisplay.jsx"; 
 import Navbar from "./NavBar.jsx";
-import parse from "html-react-parser";
 
 
 export default function HomePage() {
@@ -19,7 +18,9 @@ export default function HomePage() {
   const [isDeveloping] = useState(true);
 
   const [selectedModel, setSelectedModel] = useState("deepseek-chat"); // New model selection state
+
   const [selectedMode, setSelectedMode] = useState("learning"); // New model selection state
+  console.log('selectedMode: ', selectedMode);
 
   const [activeTab, setActiveTab] = useState("quiz"); // New state for tab management
 
@@ -287,8 +288,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         const cleanedQuizResponse = deepSeekQuizResponseRaw.replace(/```json|```/g, "").trim();
         console.log('deepSeekSummaryResponseRaw: ', deepSeekSummaryResponseRaw);
         
-        const cleanedSummaryResponse = deepSeekSummaryResponseRaw.replace(/```html|```/g, "").trim();
-        setSummary(cleanedSummaryResponse);
+        // const cleanedSummaryResponse = deepSeekSummaryResponseRaw.replace(/```html|```/g, "").trim();
+        setSummary(deepSeekSummaryResponseRaw);
         response = JSON.parse(cleanedQuizResponse);
       }
 
@@ -316,7 +317,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
     <div className="homepage-container">
       <Navbar />
-      <>{isDeveloping && (<h1 className="text-red-500 pt-15">Developing Mode</h1>)}</>
+      <>{isDeveloping && (<h1 className="text-red-500 pt-5">Developing Mode</h1>)}</>
 
       {!response && (
         <>
@@ -338,18 +339,6 @@ These notes should help you follow along with Stephan Mareek's video and prepare
               </select>
             </div>
 
-            <div className="form-group">
-              <label htmlFor="model">Select Mode:</label>
-              <select 
-                id="model" 
-                value={selectedMode} 
-                onChange={(e) => setSelectedMode(e.target.value)}
-                className="model-select"
-              >
-                <option value="learning">Learning Mode</option>
-                <option value="testing">Testing Mode</option>
-              </select>
-            </div>
 
             <div className="form-group">
               <label htmlFor="input">Enter your transcript here:</label>
@@ -376,7 +365,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       // todo: fix this to be dynamic, top-30 is not a good solution
       <div className="content-container">
         {/* mt-3 */}
-        <div className="bg-white shadow-sm z-50 mt-3"> 
+        <div className="bg-white shadow-sm z-50 mt-1"> 
       <div className="tab-buttons-container">
         <button
           className={`tab-button ${activeTab === 'quiz' ? 'active' : ''}`}
