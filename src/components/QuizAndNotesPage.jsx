@@ -23,6 +23,21 @@ export default function QuizPage() {
 
   const [activeTab, setActiveTab] = useState("quiz"); // New state for tab management
 
+  const modelOptions = [
+    {
+      id: "deepseek-chat",
+      name: "DeepSeek Chat",
+      description: "General-purpose AI model optimized broad knowledge tasks.",
+    },
+    {
+      id: "deepseek-reasoner",
+      name: "DeepSeek Reasoner",
+      description:
+        "Specialized model focused on logical reasoning, complex problem solving, and technical domains.",
+    },
+    // Add more models as needed
+  ];
+
   const invokeQuizModel = async (input) => {
     // todo: clean this up
     if (selectedModel === "deepseek-chat") {
@@ -324,30 +339,51 @@ These notes should help you follow along with Stephan Mareek's video and prepare
   return (
     <div className="quizPage-container">
       <>
-        {isDeveloping && <h1 className="text-red-500 pt-5">Developing Mode</h1>}
+        {isDeveloping && <h1 className="text-red-500 pt-5">Demo Mode</h1>}
       </>
 
       {!response && (
         <>
-          <h2 className="quizPage-title pt-15">AWS AI Quiz Generator</h2>
+          <h2 className="quizPage-title text-gray-100 pt-15">
+            AWS AI Quiz Generator
+          </h2>
 
-          <form onSubmit={handleSubmit} className="quizPage-form">
-            <div className="form-group">
+          <form onSubmit={handleSubmit} className="quizPage-form border-none">
+            <div className="form-group text-gray-300">
               <label htmlFor="model">Select Model:</label>
-              <select
-                id="model"
-                value={selectedModel}
-                onChange={(e) => setSelectedModel(e.target.value)}
-                className="model-select"
-              >
-                <option value="deepseek-chat">DeepSeek Chat</option>
-                <option value="deepseek-reasoner">DeepSeek Reasoner</option>
-                {/* From AWS maybe */}
-                {/* <option value="claude-3.5-sonnet">Claude 3.5 Sonnet</option> */}
-              </select>
+
+              <div className="grid gap-3">
+                {modelOptions.map((model) => (
+                  <div
+                    key={model.id}
+                    onClick={() => setSelectedModel(model.id)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
+                      selectedModel === model.id
+                        ? "border-blue-500 bg-gray-700 shadow-lg"
+                        : "border-gray-600 hover:border-gray-500 bg-gray-800 hover:bg-gray-750"
+                    }`}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`h-4 w-4 rounded-full border mr-3 ${
+                          selectedModel === model.id
+                            ? "bg-blue-500 border-blue-500"
+                            : "bg-transparent border-gray-400"
+                        }`}
+                      />
+                      <h3 className="font-medium text-gray-100">
+                        {model.name}
+                      </h3>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-2 pl-7">
+                      {model.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            <div className="form-group">
+            <div className="form-group text-gray-300 mt-5">
               <label htmlFor="input">Enter your transcript here:</label>
               <textarea
                 id="input"
@@ -356,6 +392,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
                 placeholder="Enter transcript..."
                 rows={10}
                 required
+                className="bg-gray-800 border border-gray-600 focus:outline-none"
               />
             </div>
 

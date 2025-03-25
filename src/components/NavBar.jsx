@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import QuizPage from './QuizAndNotesPage.jsx'
+import React, { useState } from "react";
+import { Link } from "react-router-dom";
+import QuizPage from "./QuizAndNotesPage.jsx";
+import logo from "../assets/CartoonPenHeadFeather.png";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const [username] = useState('Alvaro Sanchez');
+  const [username] = useState("Alvaro Sanchez");
 
   return (
     <nav className=" w-full bg-accent-light shadow-md z-50">
@@ -16,16 +17,34 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="p-2 rounded-md text-primary hover:text-primary-light focus:outline-none"
             >
-              <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              <svg
+                className="h-6 w-6"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
               </svg>
             </button>
           </div>
 
           {/* Center Section - Title (Always centered) */}
-          <div className="absolute left-1/2 transform -translate-x-1/2">
-            <Link to="/" className="text-2xl font-bold text-indigo-600 hover:text-indigo-700 transition-colors">
-              quizGen
+          <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2">
+            <Link
+              to="/"
+              className="flex items-center space-x-1 text-2xl font-bold text-blue-300 hover:text-blue-400 transition-colors"
+            >
+              <img
+                src={logo}
+                alt="Logo"
+                className="w-10 h-10 object-contain invert"
+              />
+              <span>quizGen</span>
             </Link>
           </div>
 
