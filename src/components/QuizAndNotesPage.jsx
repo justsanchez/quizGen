@@ -127,7 +127,7 @@ export default function QuizPage() {
                 "What is the primary function of a switch in a network?",
               options: [
                 "A. To store data permanently",
-                "B. To forward data packets to the correct client within a network",
+                "B. To forward data packets to the correct client within a network,",
                 "C. To provide cooling for the servers",
                 "D. To manage the power supply",
               ],
@@ -416,7 +416,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
       {response && response.length > 0 && (
         <div className="content-container">
-          <div className="bg-gray-700 shadow-sm z-50 mt-1">
+          <div className="bg-gray-700 shadow-sm z-50 ">
             <div className="tab-buttons-container">
               <button
                 className={`tab-button ${activeTab === "quiz" ? "active" : ""}`}

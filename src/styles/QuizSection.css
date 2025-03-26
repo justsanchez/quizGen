@@ -45,17 +45,12 @@
   transition: all 0.2s ease;
 }
 
-.correct-answer {
-  background: #d4edda;
-  font-weight: bold;
-}
-
 .option-item.correct {
   border-color: #4caf50;
 
 }
-
 .option-item.incorrect {
+  /* need this to be brighter */
   border-color: #f87171 !important; /* red-400 */
   background-color: rgba(248, 113, 113, 0.05);
 }
@@ -135,8 +130,8 @@
 }
 
 .option-item.disabled {
-  cursor: not-allowed;
-  opacity: 0.7;
+  /* cursor: not-allowed;  */
+  opacity: 0.9;
 }
 
 .option-item.selected {
@@ -149,7 +144,7 @@
 }
 
 .result-tag.incorrect {
-  background-color: #f87171; /* bg-red-400 */
+  background-color: #ef4444; /* bg-red-400 */
 }
 
 .explanation {

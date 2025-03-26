@@ -109,7 +109,7 @@ export default function QuizDisplay({ response, selectedMode }) {
         const isCorrect = correctlyAnswered[questionIndex];
 
         return (
-          <div key={questionIndex} className="quiz-question bg-gray-800 text-gray-300">
+          <div key={questionIndex} className="quiz-question text-gray-300">
             <p className="question-text">
               <strong>Q{questionIndex + 1}: </strong>
               {q.question}
@@ -146,6 +146,9 @@ export default function QuizDisplay({ response, selectedMode }) {
                       ${showAsCorrect ? "correct" : ""}
                       ${showAsIncorrect ? "incorrect" : ""}
                       ${mode === "testing" && submitted ? "disabled" : ""}
+                      ${mode === "learning" && correctlyAnswered[questionIndex] ? "disabled" : ""}
+
+                      
                     `}
                     onClick={() => {
                       if (
