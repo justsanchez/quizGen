@@ -1,9 +1,8 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import OpenAI from "openai";
 
-// Initialize clients with null checks
-let client = null;
-let openai = null;
+export let client = null;
+export let openai = null;
 
 try {
   client = new BedrockRuntimeClient({

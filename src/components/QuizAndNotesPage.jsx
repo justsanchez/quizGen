@@ -3,6 +3,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 
 import {
+  openai,
   invokeDeepSeekQuizGenerator,
   invokeDeepSeekSummaryGenerator,
 } from "../services/deepSeek.js";
@@ -17,7 +18,7 @@ export default function QuizPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // ! Developing locally, so we'll use a placeholder response instead of exhausting the model
-  const [isDeveloping] = useState(true);
+  const [isDeveloping] = useState(false);
 
   const [selectedModel, setSelectedModel] = useState("deepseek-chat"); // New model selection state
 
