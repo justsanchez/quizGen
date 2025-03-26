@@ -18,7 +18,7 @@ export default function QuizPage() {
   const [isLoading, setIsLoading] = useState(false);
 
   // ! Developing locally, so we'll use a placeholder response instead of exhausting the model
-  const [isDeveloping] = useState(false);
+  const [isDeveloping] = useState(true);
 
   const [selectedModel, setSelectedModel] = useState("deepseek-chat"); // New model selection state
 
