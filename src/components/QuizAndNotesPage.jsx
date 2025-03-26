@@ -37,33 +37,61 @@ export default function QuizPage() {
       description:
         "Specialized model focused on logical reasoning, complex problem solving, and technical domains.",
     },
-    // Add more models as needed
+    // add more models in the future
   ];
 
   const invokeQuizModel = async (input) => {
-    // todo: clean this up
-    if (selectedModel === "deepseek-chat") {
+    try {
+      if (!input || typeof input !== 'string') {
+        throw new Error('Invalid input: Transcript must be a non-empty string');
+      }
+  
+      const supportedModels = ["deepseek-chat", "deepseek-reasoner"];
+      
+      if (!supportedModels.includes(selectedModel)) {
+        throw new Error(`Model ${selectedModel} not supported. Available models: ${supportedModels.join(', ')}`);
+      }
+  
+      // checking if OpenAI client is available
+      if (!openai) {
+        throw new Error('AI service is currently unavailable. Please check your API configuration.');
+      }
+  
       return await invokeDeepSeekQuizGenerator(input, selectedModel);
+      
+    } catch (error) {
+      console.error(`Quiz generation error (model: ${selectedModel}):`, error);
+      
+      // Provide fallback or rethrow with more context
+      throw new Error(`Failed to generate quiz: ${error.message}`);
     }
-    if (selectedModel === "deepseek-reasoner") {
-      return await invokeDeepSeekQuizGenerator(input, selectedModel);
-    }
-    // Future models can be added here
-
-    throw new Error(`Model ${selectedModel} not yet implemented.`);
   };
-
+  
   const invokeSummaryModel = async (input) => {
-    // todo: clean this up
-    if (selectedModel === "deepseek-chat") {
+    try {
+      if (!input || typeof input !== 'string') {
+        throw new Error('Invalid input: Transcript must be a non-empty string');
+      }
+  
+      const supportedModels = ["deepseek-chat", "deepseek-reasoner"];
+      
+      if (!supportedModels.includes(selectedModel)) {
+        throw new Error(`Model ${selectedModel} not supported. Available models: ${supportedModels.join(', ')}`);
+      }
+  
+      // Check if OpenAI client is available
+      if (!openai) {
+        throw new Error('AI service is currently unavailable. Please check your API configuration.');
+      }
+  
       return await invokeDeepSeekSummaryGenerator(input, selectedModel);
+      
+    } catch (error) {
+      console.error(`Summary generation error (model: ${selectedModel}):`, error);
+      
+      // Provide fallback or rethrow with more context
+      throw new Error(`Failed to generate summary: ${error.message}`);
     }
-    if (selectedModel === "deepseek-reasoner") {
-      return await invokeDeepSeekSummaryGenerator(input, selectedModel);
-    }
-    // Future models can be added here
-
-    throw new Error(`Model ${selectedModel} not yet implemented.`);
   };
 
   const handleSubmit = async (e) => {

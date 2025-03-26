@@ -1,24 +1,40 @@
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import OpenAI from "openai";
 
-// todo: do this when you want to add cluade 3.5 sonnet model
-const client = new BedrockRuntimeClient({
-  region: import.meta.env.VITE_REACT_APP_AWS_REGION,
-  credentials: {
-    accessKeyId: import.meta.env.VITE_REACT_APP_AWS_ACCESS_KEY_ID,
-    secretAccessKey: import.meta.env.VITE_REACT_APP_AWS_SECRET_ACCESS_KEY,
-  },
-});
+// Initialize clients with null checks
+let client = null;
+let openai = null;
 
-const openai = new OpenAI({
-        baseURL: 'https://api.deepseek.com',
-        apiKey: import.meta.env.VITE_DEEPSEEK_API_ACCESS_KEY,
-        dangerouslyAllowBrowser: true // ! back-end in development
-});
+try {
+  client = new BedrockRuntimeClient({
+    region: import.meta.env.VITE_REACT_APP_AWS_REGION,
+    credentials: {
+      accessKeyId: import.meta.env.VITE_REACT_APP_AWS_ACCESS_KEY_ID,
+      secretAccessKey: import.meta.env.VITE_REACT_APP_AWS_SECRET_ACCESS_KEY,
+    },
+  });
+} catch (error) {
+  console.error("Error initializing Bedrock client:", error);
+}
 
+try {
+  if (import.meta.env.VITE_DEEPSEEK_API_ACCESS_KEY) {
+    openai = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
+      apiKey: import.meta.env.VITE_DEEPSEEK_API_ACCESS_KEY,
+      dangerouslyAllowBrowser: true
+    });
+  }
+} catch (error) {
+  console.error("Error initializing OpenAI client:", error);
+}
 
 export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized - check your API key");
+  }
 
+  try {
     let difficulty = "medium";
     let numQuestions = 12;
     let prompt = `
@@ -42,49 +58,53 @@ export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => 
       ]
     `;
 
-    try {
-
-      const completion = await openai.chat.completions.create({
-        model: selectedModel, 
-        messages: [
-          { role: "system", content: "You are a helpful AI quiz generator that follows structured JSON formatting." },
-          { role: "user", content: prompt } 
-        ],
-      });
-
-    // console.log('completion.choices[0].message.content: ', completion.choices[0].message.content);
-
-    return completion.choices[0].message.content;
-  } catch (error) {
-    console.error("Error invoking Bedrock model:", error);
-    throw error;
-  }
-};
-
-export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) => {
-
-  // TODO: maybe make the prompt customizable or leave as default as a option
-
-  let prompt = `
-I am studying for the AWS AI Practitioner Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
- Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
-  ${transcript}
-  `;
-
-  try {
-
     const completion = await openai.chat.completions.create({
       model: selectedModel, 
       messages: [
-        { role: "system", content: "You are a helpful AI summary generator that follows instructions." },
+        { role: "system", content: "You are a helpful AI quiz generator..." },
         { role: "user", content: prompt } 
       ],
     });
 
+    if (!completion?.choices?.[0]?.message?.content) {
+      throw new Error("Invalid response format from API");
+    }
 
-  return completion.choices[0].message.content;
-} catch (error) {
-  console.error("Error invoking Bedrock model:", error);
-  throw error;
-}
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error("Error generating quiz:", error);
+    throw new Error(`Quiz generation failed: ${error.message}`);
+  }
+};
+
+export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) => {
+  if (!openai) {
+    throw new Error("OpenAI client is not initialized - check your API key");
+  }
+
+  try {
+    let prompt = `
+    I am studying for the AWS AI Practitioner Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
+     Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
+      ${transcript}
+      `;
+    
+
+    const completion = await openai.chat.completions.create({
+      model: selectedModel,
+      messages: [
+        { role: "system", content: "You are a helpful AI summary generator..." },
+        { role: "user", content: prompt }
+      ],
+    });
+
+    if (!completion?.choices?.[0]?.message?.content) {
+      throw new Error("Invalid response format from API");
+    }
+
+    return completion.choices[0].message.content;
+  } catch (error) {
+    console.error("Error generating summary:", error);
+    throw new Error(`Summary generation failed: ${error.message}`);
+  }
 };
