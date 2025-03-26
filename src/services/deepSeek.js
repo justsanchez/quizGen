@@ -13,7 +13,7 @@ const client = new BedrockRuntimeClient({
 const openai = new OpenAI({
         baseURL: 'https://api.deepseek.com',
         apiKey: import.meta.env.VITE_DEEPSEEK_API_ACCESS_KEY,
-        dangerouslyAllowBrowser: true // ! only for development
+        dangerouslyAllowBrowser: true // ! back-end in development
 });
 
 

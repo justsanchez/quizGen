@@ -99,7 +99,6 @@ export default function QuizDisplay({ response, selectedMode }) {
             }`}
           />
         </div>
-
       </div>
 
       <h2 className="quizPage-title text-gray-300">Generated Quiz:</h2>
@@ -146,7 +145,11 @@ export default function QuizDisplay({ response, selectedMode }) {
                       ${showAsCorrect ? "correct" : ""}
                       ${showAsIncorrect ? "incorrect" : ""}
                       ${mode === "testing" && submitted ? "disabled" : ""}
-                      ${mode === "learning" && correctlyAnswered[questionIndex] ? "disabled" : ""}
+                      ${
+                        mode === "learning" && correctlyAnswered[questionIndex]
+                          ? "disabled"
+                          : ""
+                      }
 
                       
                     `}
@@ -179,8 +182,6 @@ export default function QuizDisplay({ response, selectedMode }) {
                 </p>
               </div>
             ) : null}
-
-          
           </div>
         );
       })}

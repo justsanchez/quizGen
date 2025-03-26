@@ -344,9 +344,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
   return (
     <div className="quizPage-container">
-      <>
-        {isDeveloping && <h1 className="text-red-500 pt-5">Demo Mode</h1>}
-      </>
+      <>{isDeveloping && <h1 className="text-red-500 pt-5">Demo Mode</h1>}</>
 
       {!response && (
         <>
@@ -416,24 +414,27 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
       {response && response.length > 0 && (
         <div className="content-container">
-          <div className="bg-gray-700 shadow-sm z-50 ">
+          <div className="shadow-sm z-50">
             <div className="tab-buttons-container">
-              <button
-                className={`tab-button ${activeTab === "quiz" ? "active" : ""}`}
-                onClick={() => setActiveTab("quiz")}
-              >
-                Quiz
-              </button>
-              <button
-                className={`tab-button ${
-                  activeTab === "summary" ? "active" : ""
-                }`}
-                onClick={() => setActiveTab("summary")}
-              >
-                Study Notes
-              </button>
+              <div className="tab-buttons-inner max-[920px]:!left-0 max-[920px]:!justify-center">
+                <button
+                  className={`tab-button ${
+                    activeTab === "quiz" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("quiz")}
+                >
+                  Quiz
+                </button>
+                <button
+                  className={`tab-button ${
+                    activeTab === "summary" ? "active" : ""
+                  }`}
+                  onClick={() => setActiveTab("summary")}
+                >
+                  Study Notes
+                </button>
+              </div>
             </div>
-            <div className="tab-border"></div>
           </div>
 
           {/* Tab Content */}
@@ -444,7 +445,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           ) : (
             // Summary Tab
             <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 text-gray-200 shadow-lg rounded-lg leading-relaxed space-y-4">
-              <ReactMarkdown remarkPlugins={[remarkGfm]}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
                 components={{
                   h2: ({ node, ...props }) => (
                     <h2
@@ -474,7 +476,10 @@ These notes should help you follow along with Stephan Mareek's video and prepare
                     />
                   ),
                   table: ({ node, ...props }) => (
-                    <table className="w-full border-collapse border border-gray-700 text-gray-200" {...props} />
+                    <table
+                      className="w-full border-collapse border border-gray-700 text-gray-200"
+                      {...props}
+                    />
                   ),
                   thead: ({ node, ...props }) => (
                     <thead className="bg-gray-800 text-white" {...props} />
@@ -486,10 +491,16 @@ These notes should help you follow along with Stephan Mareek's video and prepare
                     <tr className="border border-gray-600" {...props} />
                   ),
                   th: ({ node, ...props }) => (
-                    <th className="border border-gray-600 px-4 py-2 font-semibold text-left" {...props} />
+                    <th
+                      className="border border-gray-600 px-4 py-2 font-semibold text-left"
+                      {...props}
+                    />
                   ),
                   td: ({ node, ...props }) => (
-                    <td className="border border-gray-600 px-4 py-2" {...props} />
+                    <td
+                      className="border border-gray-600 px-4 py-2"
+                      {...props}
+                    />
                   ),
                 }}
               >
