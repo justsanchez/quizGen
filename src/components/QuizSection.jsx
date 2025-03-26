@@ -1,3 +1,6 @@
+// This fill is heavy with a mix of TailwindCSS and custom CSS.
+// Todo: I need to clean up the CSS to be pure TailwindCSS
+
 import React, { useState } from "react";
 import "../styles/QuizSection.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -71,21 +74,21 @@ export default function QuizDisplay({ response, selectedMode }) {
         <div className="group relative flex items-center mr-2">
           <FontAwesomeIcon
             icon={faCircleInfo}
-            className="text-gray-400 cursor-pointer text-sm opacity-80 hover:opacity-100 transition-opacity"
+            className="text-gray-200 cursor-pointer text-sm opacity-80 hover:opacity-100 transition-opacity"
           />
-          <div className="absolute bottom-full mb-2 hidden w-48 text-xs text-white bg-gray-800 p-2 rounded-lg shadow-lg group-hover:block">
+          <div className="bg-white absolute bottom-full mb-2 hidden w-48 text-xs text-black p-2 rounded-lg shadow-lg group-hover:block">
             Switching Modes will clear all progress on current mode.
           </div>
         </div>
 
         {/* Mode Label (Fixed Width) */}
-        <span className=" text-sm font-medium text-gray-700 w-[110px] text-center">
+        <span className=" text-sm font-medium text-gray-300 w-[110px] text-center">
           {mode === "learning" ? "Learning Mode" : "Testing Mode"}
         </span>
 
         {/* Toggle Switch */}
         <div
-          className="relative inline-flex h-6 w-12 cursor-pointer rounded-full bg-gray-200"
+          className="relative inline-flex h-6 w-12 cursor-pointer rounded-full bg-gray-300"
           onClick={toggleMode}
         >
           <span
@@ -99,14 +102,14 @@ export default function QuizDisplay({ response, selectedMode }) {
 
       </div>
 
-      <h2 className="quizPage-title">Generated Quiz:</h2>
+      <h2 className="quizPage-title text-gray-300">Generated Quiz:</h2>
 
       {response.map((q, questionIndex) => {
         const correctAnswerIndex = getCorrectAnswerIndex(q);
         const isCorrect = correctlyAnswered[questionIndex];
 
         return (
-          <div key={questionIndex} className="quiz-question">
+          <div key={questionIndex} className="quiz-question bg-gray-800 text-gray-300">
             <p className="question-text">
               <strong>Q{questionIndex + 1}: </strong>
               {q.question}
@@ -119,7 +122,7 @@ export default function QuizDisplay({ response, selectedMode }) {
               )}
             </p>
 
-            <ul className="options-list">
+            <ul className="options-list ">
               {q.options.map((option, optionIndex) => {
                 const isSelected =
                   selectedAnswers[questionIndex]?.includes(optionIndex);
@@ -136,8 +139,7 @@ export default function QuizDisplay({ response, selectedMode }) {
                 return (
                   <li
                     key={optionIndex}
-                    className={`
-                      option-item
+                    className={`option-item 
                       ${
                         mode === "testing" && isSelected ? "selectedAnswer" : ""
                       }

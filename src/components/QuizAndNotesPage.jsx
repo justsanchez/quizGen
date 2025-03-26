@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+
 import {
   invokeDeepSeekQuizGenerator,
   invokeDeepSeekSummaryGenerator,
@@ -296,12 +298,16 @@ A server is like a "brain" for computing tasks. It consists of:
 - Traditional IT infrastructure is limited by physical constraints, while the cloud provides flexibility and on-demand resources.
 - Understanding the basics of servers, networking, and data centers is crucial for grasping cloud concepts.
 
----
+
+| Concept                | Explanation |
+|------------------------|------------|
+| **Cloud Computing**    | Provides scalability, cost-efficiency, and reliability for businesses. |
+| **Traditional IT**     | Limited by physical constraints, unlike the cloud which offers flexibility. |
+| **On-Demand Resources** | The cloud allows businesses to scale resources as needed, reducing waste. |
+| **Networking & Servers** | Understanding these fundamentals is key to grasping cloud concepts. |
 
 #### **Next Steps**
 - In the next lecture, we’ll dive deeper into **what the cloud is** and how it works.
-
----
 
 These notes should help you follow along with Stephan Mareek's video and prepare effectively for the AWS AI Practitioner Exam!`;
 
@@ -385,6 +391,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
             <div className="form-group text-gray-300 mt-5">
               <label htmlFor="input">Enter your transcript here:</label>
+              {/* include | border border-gray-600 | if wanted in the future */}
               <textarea
                 id="input"
                 value={input}
@@ -392,7 +399,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
                 placeholder="Enter transcript..."
                 rows={10}
                 required
-                className="bg-gray-800 border border-gray-600 focus:outline-none"
+                className="bg-gray-800 focus:outline-none"
               />
             </div>
 
@@ -409,7 +416,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
       {response && response.length > 0 && (
         <div className="content-container">
-          <div className="bg-white shadow-sm z-50 mt-1">
+          <div className="bg-gray-700 shadow-sm z-50 mt-1">
             <div className="tab-buttons-container">
               <button
                 className={`tab-button ${activeTab === "quiz" ? "active" : ""}`}
@@ -436,8 +443,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
             </div>
           ) : (
             // Summary Tab
-            <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-lg leading-relaxed space-y-4">
-              <ReactMarkdown
+            <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 text-gray-200 shadow-lg rounded-lg leading-relaxed space-y-4">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}
                 components={{
                   h2: ({ node, ...props }) => (
                     <h2
@@ -447,24 +454,42 @@ These notes should help you follow along with Stephan Mareek's video and prepare
                   ),
                   h3: ({ node, ...props }) => (
                     <h3
-                      className="text-2xl font-semibold mb-3 mt-5 text-gray-800"
+                      className="text-2xl font-semibold mb-3 mt-5 "
                       {...props}
                     />
                   ),
                   p: ({ node, ...props }) => (
-                    <p className="text-gray-700 mb-4 text-lg" {...props} />
+                    <p className="text-gray-200 mb-4 text-lg" {...props} />
                   ),
                   ul: ({ node, ...props }) => (
                     <ul
-                      className="space-y-3 pl-5 list-disc list-outside marker:text-indigo-400"
+                      className="space-y-3 pl-5 list-disc list-outside marker:text-indigo-300"
                       {...props}
                     />
                   ),
                   code: ({ node, ...props }) => (
                     <code
-                      className="bg-gray-50 px-2 py-1 rounded-md text-sm font-mono"
+                      className="bg-gray-800 px-2 py-1 rounded-md text-sm font-mono"
                       {...props}
                     />
+                  ),
+                  table: ({ node, ...props }) => (
+                    <table className="w-full border-collapse border border-gray-700 text-gray-200" {...props} />
+                  ),
+                  thead: ({ node, ...props }) => (
+                    <thead className="bg-gray-800 text-white" {...props} />
+                  ),
+                  tbody: ({ node, ...props }) => (
+                    <tbody className="bg-gray-700" {...props} />
+                  ),
+                  tr: ({ node, ...props }) => (
+                    <tr className="border border-gray-600" {...props} />
+                  ),
+                  th: ({ node, ...props }) => (
+                    <th className="border border-gray-600 px-4 py-2 font-semibold text-left" {...props} />
+                  ),
+                  td: ({ node, ...props }) => (
+                    <td className="border border-gray-600 px-4 py-2" {...props} />
                   ),
                 }}
               >
