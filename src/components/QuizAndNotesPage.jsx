@@ -373,11 +373,11 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
   return (
     <div className="quizPage-container">
-      <>{isDeveloping && <h1 className="text-red-500 pt-5">Demo Mode</h1>}</>
+      <>{isDeveloping && <h1 className="text-red-500 pt-1">Demo Mode</h1>}</>
 
       {!response && (
         <>
-          <h2 className="quizPage-title text-gray-100 pt-15">
+          <h2 className="quizPage-title text-gray-100 pt-10">
             AWS AI Quiz Generator
           </h2>
 
