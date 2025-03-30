@@ -1,34 +1,46 @@
-import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import QuizSection from './QuizSection';
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import QuizSection from "./QuizSection";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
 import {
   openai,
   invokeDeepSeekQuizGenerator,
   invokeDeepSeekSummaryGenerator,
-} from '../services/deepSeek';
-
+} from "../services/deepSeek";
 
 export default function AIQuizNotes() {
+  // ! holy this is sick
   const { state } = useLocation();
   const [response, setResponse] = useState(null);
-  const [summary, setSummary] = useState('');
+  const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('quiz');
+  const [activeTab, setActiveTab] = useState("quiz");
+
+  // ! this allows us not to exhausted the API call
   const [isDeveloping] = useState(false);
 
   useEffect(() => {
     const generateContent = async () => {
       if (!state?.transcript) return;
-      
+
       try {
         let quizResponse, summaryResponse;
-        
-        if (!isDeveloping) {
-          const quizRaw = await invokeDeepSeekQuizGenerator(state.transcript, state.model);
-          const summaryRaw = await invokeDeepSeekSummaryGenerator(state.transcript, state.model);
-          
+
+        if (!isDeveloping && openai) {
+          // checking if OpenAI client is available
+          const quizRaw = await invokeDeepSeekQuizGenerator(
+            state.transcript,
+            state.model
+          );
+          const summaryRaw = await invokeDeepSeekSummaryGenerator(
+            state.transcript,
+            state.model
+          );
+
           // Clean and parse responses
           quizResponse = JSON.parse(quizRaw.replace(/```json|```/g, "").trim());
           summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
@@ -261,10 +273,24 @@ A server is like a "brain" for computing tasks. It consists of:
 These notes should help you follow along with Stephan Mareek's video and prepare effectively for the AWS AI Practitioner Exam!`;
         }
 
+        if (!openai) {
+          toast.warn(
+            "OpenAI client is not available. Demo data is being used.",
+            {
+              position: "top-center",
+              autoClose: 2000, // Closes after 3 seconds
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            }
+          );
+        }
+
         setResponse(quizResponse.quiz);
         setSummary(summaryResponse);
       } catch (error) {
-        console.error('Generation error:', error);
+        console.error("Generation error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -287,14 +313,16 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         <div className="tab-buttons-container">
           <div className="tab-buttons-inner max-[920px]:!left-0 max-[920px]:!justify-center">
             <button
-              className={`tab-button ${activeTab === 'quiz' ? 'active' : ''}`}
-              onClick={() => setActiveTab('quiz')}
+              className={`tab-button ${activeTab === "quiz" ? "active" : ""}`}
+              onClick={() => setActiveTab("quiz")}
             >
               Quiz
             </button>
             <button
-              className={`tab-button ${activeTab === 'summary' ? 'active' : ''}`}
-              onClick={() => setActiveTab('summary')}
+              className={`tab-button ${
+                activeTab === "summary" ? "active" : ""
+              }`}
+              onClick={() => setActiveTab("summary")}
             >
               Study Notes
             </button>
@@ -302,15 +330,13 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         </div>
       </div>
 
-      {activeTab === 'quiz' ? (
+      {activeTab === "quiz" ? (
         <div className="tab-content">
           <QuizSection response={response} />
         </div>
       ) : (
         <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 text-gray-200 shadow-lg rounded-lg leading-relaxed space-y-4">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>
-            {summary}
-          </ReactMarkdown>
+          <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
         </div>
       )}
     </div>

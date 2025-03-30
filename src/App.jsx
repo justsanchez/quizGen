@@ -1,9 +1,11 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/NavBar";
-import PromptSection from "./components/PromptSection1";
+import PromptSection from "./components/PromptPage";
 import AIQuizNotes from "./components/AIQuizNotes";
 import LandingPage from "./components/LandingPage";
-import ScrollToTop from './components/ScrollToTop';
+import ScrollToTop from "./components/ScrollToTop";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 export default function App() {
   return (
@@ -17,6 +19,8 @@ export default function App() {
           <Route path="/quizNotes" element={<AIQuizNotes />} />
         </Routes>
       </main>
+      {/* Toast container for notifications */}
+      <ToastContainer position="top-right" autoClose={3000} />
     </div>
   );
 }

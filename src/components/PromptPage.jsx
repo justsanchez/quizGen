@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import "../styles/QuizAndNotesPage.css";
+import "../styles/AIQuizNotes.css";
 
 export default function PromptSection() {
   const [input, setInput] = useState('');
