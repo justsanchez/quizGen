@@ -6,13 +6,13 @@ import "../styles/QuizSection.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 
-export default function QuizDisplay({ response, selectedMode }) {
+export default function QuizDisplay({ response }) {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
   const [correctlyAnswered, setCorrectlyAnswered] = useState({});
   const [submitted, setSubmitted] = useState(false);
 
-  const [mode, setSelectedMode] = useState(selectedMode);
+  const [mode, setSelectedMode] = useState("learning");
 
   const handleAnswerSelect = (questionIndex, optionIndex) => {
     const correctIndex = getCorrectAnswerIndex(response[questionIndex]);

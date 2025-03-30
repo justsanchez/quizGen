@@ -96,7 +96,7 @@ const LandingPage = () => {
               </div>
 
               <Link
-                to="/QuizPage"
+                to="/prompt"
                 className="mt-8 block w-full rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
               >
                 Generate Now
