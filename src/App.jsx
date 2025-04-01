@@ -20,7 +20,7 @@ export default function App() {
         </Routes>
       </main>
       {/* Toast container for notifications */}
-      <ToastContainer position="top-right" autoClose={3000} />
+      <ToastContainer position="top-right" autoClose={2500} />
     </div>
   );
 }

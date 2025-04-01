@@ -21,7 +21,7 @@ export default function AIQuizNotes() {
   const [activeTab, setActiveTab] = useState("quiz");
 
   // ! this allows us not to exhausted the API call
-  const [isDeveloping] = useState(false);
+  const [isDeveloping] = useState(true);
 
   useEffect(() => {
     const generateContent = async () => {
@@ -278,7 +278,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
             "OpenAI client is not available. Demo data is being used.",
             {
               position: "top-center",
-              autoClose: 2000, // Closes after 3 seconds
+              autoClose: 2500, 
               hideProgressBar: false,
               closeOnClick: true,
               pauseOnHover: true,
