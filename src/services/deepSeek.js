@@ -82,8 +82,13 @@ export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) 
   }
 
   try {
+    /* Need to make what cert the user is studying for dynamic
+    - AWS AI Practitioner Exam
+    - AWS Developer Associate
+    - AWS Solutions Architect Associate
+    */
     let prompt = `
-    I am studying for the AWS AI Practitioner Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
+    I am studying for the AWS Developer Associate Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
      Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
       ${transcript}
       `;

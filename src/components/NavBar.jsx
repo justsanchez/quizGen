@@ -1,20 +1,22 @@
 import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import logo from "../assets/CartoonPenHeadFeather.png";
+import { useAuth } from "../contexts/AuthContext"; // Add this import
 
 const Navbar = () => {
+  const { userLoggedIn, currentUser } = useAuth(); // Get auth state
   const [username] = useState("Alvaro Sanchez");
 
   return (
-    <nav className=" w-full bg-accent-light shadow-md z-50">
+    <nav className="w-full bg-accent-light shadow-md z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16 relative">
           {/* Left Section - Hamburger Menu */}
           <div className="flex items-center md:hidden">
-           
+            {/* Hamburger menu content */}
           </div>
 
-          {/* Center Section - Title (Always centered) */}
+          {/* Center Section - Title */}
           <div className="absolute left-1/2 transform -translate-x-1/2 flex items-center space-x-2">
             <Link
               to="/"
@@ -29,17 +31,42 @@ const Navbar = () => {
             </Link>
           </div>
 
-          {/* Right Section - User Profile */}
+          {/* Right Section - Authentication Links */}
           <div className="flex items-center ml-auto">
-            <div className="flex items-center space-x-2">
-              <span className="bg-gray-100 px-3 py-1 rounded-full text-sm font-medium text-gray-700 hover:bg-gray-200 transition-colors">
-                {username}
-              </span>
+            <div className="flex items-center space-x-4">
+              {userLoggedIn ? (
+                // Show user profile when logged in
+                <img
+                src={currentUser?.photoURL || "https://ui-avatars.com/api/?name=" + encodeURIComponent(currentUser?.displayName || "U") + "&background=random"}
+                alt="Profile"
+                className="w-10 h-10 rounded-full mx-auto "
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(currentUser?.displayName || "U")}&background=random`;
+                }}
+              />
+              ) 
+              : (
+                // Show login/signup links when not logged in
+                <div className="flex space-x-4">
+                  <Link
+                    to="/login"
+                    className="text-gray-700 hover:text-blue-500 px-3 py-2 rounded-md text-sm font-medium transition-colors"
+                  >
+                    Sign In
+                  </Link>
+                  <Link
+                    to="/signup"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition-colors"
+                  >
+                    Create Account
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>
       </div>
-      
     </nav>
   );
 };
