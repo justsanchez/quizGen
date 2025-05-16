@@ -5,6 +5,7 @@ import React, { useState } from "react";
 import "../styles/QuizSection.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
+import ScrollToTop from "./ScrollToTop";
 
 export default function QuizDisplay({ response }) {
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -195,6 +196,23 @@ export default function QuizDisplay({ response }) {
           >
             Submit Quiz
           </button>
+        </div>
+      )}
+      {mode === "testing" && submitted && (
+        // ! Not fully tested
+        <div>
+          <div className="submit-section">
+            <button
+              className="submit-button"
+              onClick={() => {
+                resetQuizStates();
+                ScrollToTop();
+              }}
+              style={{ backgroundColor: "#2196f3" }}
+            >
+              Reset Quiz
+            </button>
+          </div>
         </div>
       )}
     </div>

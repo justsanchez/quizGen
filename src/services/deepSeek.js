@@ -34,27 +34,30 @@ export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => 
   }
 
   try {
-    let difficulty = "medium";
-    let numQuestions = 12;
+    let difficulty = "exam level";
+    let numQuestions = 15;
     let prompt = `
     Generate a ${difficulty} difficulty quiz with ${numQuestions} questions with this transcript.
     ${transcript}
     For each question:
-    1. Phrase as a multiple choice question
-    2. Provide 4 answer options
-    4. Add a brief explanation
-    5. Include relevant AWS service names if applicable in the explanation
+    1. Phrase as a multiple choice question.
+    2. Provide 4 answer options (A, B, C, D).
+    3. Randomly choose the correct answer’s letter (A, B, C, D), so it’s not always in the same position.
+    4. Ensure that the correct answer's letter is **evenly distributed across all questions** — do NOT always place the answer in the middle (e.g., avoid always using B or C).
+    5. Add a brief explanation.
+    6. Include relevant AWS service names if applicable in the explanation.
 
     **Return ONLY valid JSON. Do NOT include any extra text.**
     Format the response exactly like this:
+    Example:
       "quiz": [
-        {
-          "question": "...?",
-          "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
-          "correct": "B",
-          "explanation": "..."
-        }
-      ]
+    {
+      "question": "...?",
+      "options": ["...", "...", "...", "..."],
+      "correct": "A",
+      "explanation": "..."
+    }
+  ]
     `;
 
     const completion = await openai.chat.completions.create({
@@ -89,7 +92,8 @@ export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) 
     */
     let prompt = `
     I am studying for the AWS Developer Associate Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
-     Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember
+     Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember.
+     Provide only the requested information without any additional commentary, follow-up suggestions, or pleasantries.
       ${transcript}
       `;
     

@@ -131,12 +131,12 @@ export default function Login() {
                 Sign up
               </Link>
             </p>
-             {/* ! Fix up */}
-             <p className="text-center text-gray-500 text-xs">
+            {/* TODO: 5 free prompts for non logged in users -> Difficulty: Hard maybe */}
+            {/* <p className="text-center text-gray-500 text-xs">
               <Link to="/" className="text-grey-100 hover:text-white-100 hover:underline">
                 Continue without signing in?
               </Link>
-            </p>
+            </p> */}
           </form>
         </div>
       </div>

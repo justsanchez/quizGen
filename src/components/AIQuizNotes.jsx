@@ -25,6 +25,10 @@ export default function AIQuizNotes() {
 
   useEffect(() => {
     const generateContent = async () => {
+      console.log("Generating content...");
+      console.log(state);
+      console.log(state.transcript);
+      
       if (!state?.transcript) return;
 
       try {
@@ -44,6 +48,9 @@ export default function AIQuizNotes() {
           // Clean and parse responses
           quizResponse = JSON.parse(quizRaw.replace(/```json|```/g, "").trim());
           summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
+
+          console.log("Quiz Response:", quizResponse);
+          console.log("Summary Response:", summaryResponse);
         } else {
           // Use placeholder data for development
           quizResponse = {
@@ -303,8 +310,31 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     return <div>No transcript provided. Please go back and enter one.</div>;
   }
 
+  const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
+
+  useEffect(() => {
+    if (isLoading) {
+      const timer = setTimeout(() => {
+        setShowTimeoutMessage(true);
+      }, 20000); // 20 seconds
+      return () => clearTimeout(timer);
+    } else {
+      setShowTimeoutMessage(false);
+    }
+  }, [isLoading]);
+
   if (isLoading) {
-    return <div>Generating content...</div>;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[50vh] text-white space-y-4">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+        <p>Generating your quiz...</p>
+        {showTimeoutMessage && (
+          <p className="text-blue-300 text-sm mt-4 max-w-md text-center">
+            Thank you for your patience! This is taking longer than usual. We're still working on creating the best quiz for you.
+          </p>
+        )}
+      </div>
+    );
   }
 
   return (
@@ -336,7 +366,30 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         </div>
       ) : (
         <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 text-gray-200 shadow-lg rounded-lg leading-relaxed space-y-4">
-          <ReactMarkdown remarkPlugins={[remarkGfm]}>{summary}</ReactMarkdown>
+          <ReactMarkdown
+            remarkPlugins={[remarkGfm]}
+            components={{
+              ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
+              table: ({ children }) => (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full border border-gray-700">
+                    {children}
+                  </table>
+                </div>
+              ),
+              th: ({ children }) => (
+                <th className="border border-gray-700 px-4 py-2 bg-gray-800 text-gray-200">
+                  {children}
+                </th>
+              ),
+              td: ({ children }) => (
+                <td className="border border-gray-700 px-4 py-2 text-gray-200">
+                  {children}
+                </td>
+              ),
+            }}
+          >{summary}</ReactMarkdown>
         </div>
       )}
     </div>

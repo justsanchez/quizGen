@@ -103,12 +103,16 @@ const Navbar = () => {
                     >
                       Profile
                     </Link>
-                    <button
-                      onClick={handleLogout}
+                    <Link
+                      to="/"
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-red-600"
+                      onClick={() => {
+                      setIsDropdownOpen(false);
+                      handleLogout();
+                    }}
                     >
                       Sign Out
-                    </button>
+                    </Link>
                   </div>
                 )}
               </div>

@@ -6,8 +6,8 @@ import LandingPage from "./components/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 
 // Firebase Auth
-import Login from "./components/auth/login";
-import Register from "./components/auth/register";
+import Login from "./components/auth/Login";
+import Register from "./components/auth/Register";
 import { ToastContainer } from "react-toastify";
 
 // Toast Messages

@@ -1,7 +1,9 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { useAuth } from "../contexts/AuthContext";
 
 const LandingPage = () => {
+  const { userLoggedIn } = useAuth();
   return (
 <div className="relative isolate overflow-hidden bg-gray-900 px-6 py-16 sm:px-16 md:py-32 min-h-screen">
       <svg
@@ -32,12 +34,14 @@ const LandingPage = () => {
               Enhance Your Study Sessions with <strong className="text-blue-300">quizGen</strong>
             </h1>
             <p className="mt-6 text-lg text-gray-300 max-w-2xl">
-              Quizzing yourself is one of the most effective study techniques,
-              reinforcing knowledge through&nbsp;
-              <strong className="text-blue-400">active recall</strong>. This
-              process helps you identify gaps in understanding, strengthen
-              memory retention, and improve long-term learning.
-            </p>
+  Quizzing yourself is one of the most effective study techniques,
+  reinforcing knowledge through&nbsp;
+  <strong className="text-blue-300">active recall</strong>. Using 
+  <span className="animated-ai font-bold bg-gradient-to-r from-white via-blue-300 to-blue-500 bg-clip-text text-transparent animate-gradient">
+    &nbsp;Artificial Intelligence&nbsp;
+  </span>
+  enhances this process by generating personalized quizzes that help you identify gaps in understanding, strengthen memory retention, and improve long-term learning.
+</p>
 
             {/* <div className="mt-10 flex flex-col sm:flex-row gap-6 max-w-md">
               <Link
@@ -77,7 +81,7 @@ const LandingPage = () => {
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900/50 text-blue-400">
                     1
                   </div>
-                  <p className="ml-4 text-gray-300">Copy your notes/textbook</p>
+                  <p className="ml-4 text-gray-300">Grab your notes, textbook, or transcripts</p>
                 </div>
 
                 <div className="flex items-center">
@@ -95,12 +99,24 @@ const LandingPage = () => {
                 </div>
               </div>
 
-              <Link
-                to="/prompt"
+              {/* if user is not logged in, show inline error message */}
+              {userLoggedIn ? (
+                <Link
+                  to="/prompt"
+                  className="mt-8 block w-full rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
+                >
+                  Generate Now
+                </Link>
+              ) : (
+                <Link
+                to="/register"
                 className="mt-8 block w-full rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
               >
                 Generate Now
               </Link>
+              )}
+
+              
             </div>
           </div>
         </div>
