@@ -20,7 +20,7 @@ export default function AIQuizNotes() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("quiz");
 
-  // ! this allows us not to exhausted the API call
+  // ! this allows us not to exhausted the API calls
   const [isDeveloping] = useState(true);
 
   useEffect(() => {
@@ -56,131 +56,174 @@ export default function AIQuizNotes() {
           quizResponse = {
             quiz: [
               {
-                question: "What is the primary role of a router in a network?",
-                options: [
-                  "A. To store data permanently",
-                  "B. To forward data packets between computers in the network",
-                  "C. To cool down the servers",
-                  "D. To provide long-term storage for files",
+                "question": "What does EBS stand for in AWS?",
+                "options": [
+                  "Elastic Block System",
+                  "Elastic Block Store",
+                  "Elastic Backup Storage",
+                  "Extended Block Service"
                 ],
-                correct: "B",
-                explanation:
-                  "A router is a device that forwards data packets between computers in a network, ensuring that the data reaches its intended destination. This is similar to how a post office routes letters to the correct address.",
+                "correct": 1,
+                "explanation": "EBS stands for Elastic Block Store, which is a network drive that can be attached to EC2 instances while they run."
               },
               {
-                question: "What does RAM stand for in the context of servers?",
-                options: [
-                  "A. Random Access Memory",
-                  "B. Read-Only Memory",
-                  "C. Remote Access Module",
-                  "D. Routing and Management",
+                "question": "What is the primary purpose of an EBS Volume?",
+                "options": [
+                  "To provide temporary storage for EC2 instances",
+                  "To persist data even after the instance is terminated",
+                  "To act as a physical drive for EC2 instances",
+                  "To replace S3 storage for large datasets"
                 ],
-                correct: "A",
-                explanation:
-                  "RAM stands for Random Access Memory, which is a type of fast memory used by servers to store and retrieve information quickly. It is essential for performing computations and running applications efficiently.",
+                "correct": 1,
+                "explanation": "EBS Volumes allow data to persist even after the instance is terminated, enabling data recovery by attaching the volume to a new instance."
               },
               {
-                question: "What is the main purpose of a database in a server?",
-                options: [
-                  "A. To cool down the CPU",
-                  "B. To store data in a structured way for easy querying",
-                  "C. To route data packets",
-                  "D. To provide power supply to the server",
+                "question": "How many instances can an EBS Volume be attached to at the CCP level?",
+                "options": [
+                  "Unlimited",
+                  "Two",
+                  "One",
+                  "Depends on the volume size"
                 ],
-                correct: "B",
-                explanation:
-                  "A database is used to store data in a structured format, making it easy to search, query, and retrieve information. This is crucial for applications that require quick access to large amounts of data.",
+                "correct": 2,
+                "explanation": "At the Certified Cloud Practitioner (CCP) level, an EBS Volume can only be attached to one instance at a time."
               },
               {
-                question:
-                  "What is the primary function of a switch in a network?",
-                options: [
-                  "A. To store data permanently",
-                  "B. To forward data packets to the correct client within a network,",
-                  "C. To provide cooling for the servers",
-                  "D. To manage the power supply",
+                "question": "What is the availability zone constraint for EBS Volumes?",
+                "options": [
+                  "They can be moved freely across regions",
+                  "They are bound to a specific availability zone",
+                  "They are global and can be accessed from any AZ",
+                  "They can be attached to instances in multiple AZs simultaneously"
                 ],
-                correct: "B",
-                explanation:
-                  "A switch is a networking device that forwards data packets to the correct client within a network. It ensures that data reaches the intended recipient efficiently.",
+                "correct": 1,
+                "explanation": "EBS Volumes are locked to a specific availability zone and cannot be directly attached to instances in another AZ without a snapshot."
               },
               {
-                question:
-                  "What is the main advantage of using the cloud over traditional IT infrastructure?",
-                options: [
-                  "A. It requires more physical space",
-                  "B. It eliminates the need for maintenance and scaling",
-                  "C. It provides on-demand resources and scalability",
-                  "D. It increases the need for manual intervention",
+                "question": "What is the default behavior of the 'Delete on Termination' attribute for the root EBS Volume?",
+                "options": [
+                  "It is disabled by default",
+                  "It is enabled by default",
+                  "It depends on the instance type",
+                  "It must be manually configured during setup"
                 ],
-                correct: "C",
-                explanation:
-                  "The cloud provides on-demand resources and scalability, allowing businesses to scale up or down based on their needs without the hassle of maintaining physical servers. AWS services like EC2 (Elastic Compute Cloud) and S3 (Simple Storage Service) are examples of cloud resources that offer scalability.",
+                "correct": 1,
+                "explanation": "By default, the 'Delete on Termination' attribute is enabled for the root EBS Volume, causing it to be deleted when the instance is terminated."
               },
               {
-                question: "What is the role of a DNS server in a network?",
-                options: [
-                  "A. To store data permanently",
-                  "B. To translate domain names into IP addresses",
-                  "C. To provide cooling for the servers",
-                  "D. To manage the power supply",
+                "question": "What is the default behavior of the 'Delete on Termination' attribute for additional EBS Volumes?",
+                "options": [
+                  "It is enabled by default",
+                  "It is disabled by default",
+                  "It depends on the volume type",
+                  "It is randomly assigned"
                 ],
-                correct: "B",
-                explanation:
-                  "A DNS (Domain Name System) server translates human-readable domain names (like www.example.com) into IP addresses that computers use to identify each other on the network. This is essential for routing data packets correctly.",
+                "correct": 1,
+                "explanation": "For any additional EBS Volumes attached to an instance, the 'Delete on Termination' attribute is disabled by default."
               },
               {
-                question: "What is the primary function of a CPU in a server?",
-                options: [
-                  "A. To store data permanently",
-                  "B. To perform computations and calculations",
-                  "C. To route data packets",
-                  "D. To provide cooling for the server",
+                "question": "How can you move an EBS Volume to a different availability zone?",
+                "options": [
+                  "By directly attaching it to an instance in another AZ",
+                  "By creating a snapshot and restoring it in another AZ",
+                  "By using AWS DataSync",
+                  "By increasing the volume size"
                 ],
-                correct: "B",
-                explanation:
-                  "The CPU (Central Processing Unit) is responsible for performing computations and calculations in a server. It is the 'brain' of the server, handling tasks and processing data.",
+                "correct": 1,
+                "explanation": "To move an EBS Volume to another AZ, you must create a snapshot of the volume and then restore it in the desired AZ."
               },
               {
-                question: "What is a data center?",
-                options: [
-                  "A. A device that routes data packets",
-                  "B. A facility that houses servers and networking equipment",
-                  "C. A type of memory used in servers",
-                  "D. A cooling system for servers",
+                "question": "What is the free tier offering for EBS storage per month?",
+                "options": [
+                  "50 GB of any EBS type",
+                  "30 GB of General Purpose (SSD) or Magnetic storage",
+                  "100 GB of GP3 storage",
+                  "10 GB of IO1 storage"
                 ],
-                correct: "B",
-                explanation:
-                  "A data center is a facility that houses servers, networking equipment, and other IT infrastructure. It is designed to store, process, and manage large amounts of data efficiently.",
+                "correct": 1,
+                "explanation": "AWS provides 30 GBs of free EBS storage per month for General Purpose (SSD) or Magnetic volumes."
               },
               {
-                question:
-                  "What is the main challenge of scaling traditional IT infrastructure?",
-                options: [
-                  "A. It is easy to scale quickly",
-                  "B. It requires significant time, space, and resources",
-                  "C. It does not require maintenance",
-                  "D. It is cost-effective",
+                "question": "What analogy is used to describe EBS Volumes in the transcript?",
+                "options": [
+                  "Network USB sticks",
+                  "Cloud hard drives",
+                  "Virtual RAM disks",
+                  "Temporary cache storage"
                 ],
-                correct: "B",
-                explanation:
-                  "Scaling traditional IT infrastructure requires significant time, space, and resources. Businesses need to purchase, install, and maintain additional servers, which can be costly and time-consuming.",
+                "correct": 0,
+                "explanation": "EBS Volumes are compared to network USB sticks because they can be detached from one instance and attached to another via the network."
               },
               {
-                question:
-                  "What is the primary benefit of using cloud computing for disaster recovery?",
-                options: [
-                  "A. It increases the risk of data loss",
-                  "B. It provides redundancy and backup options",
-                  "C. It requires more physical space",
-                  "D. It eliminates the need for maintenance",
+                "question": "What must you provision in advance when creating an EBS Volume?",
+                "options": [
+                  "The number of instances it can be attached to",
+                  "The availability zone",
+                  "The capacity (GB) and IOPS",
+                  "The snapshot schedule"
                 ],
-                correct: "B",
-                explanation:
-                  "Cloud computing provides redundancy and backup options, making it easier to recover data in the event of a disaster. AWS services like S3 (Simple Storage Service) and Glacier offer robust backup and recovery solutions.",
+                "correct": 2,
+                "explanation": "When creating an EBS Volume, you must specify the capacity (in GB) and the IOPS (I/O operations per second) in advance."
+              },
+              {
+                "question": "What happens to an unattached EBS Volume?",
+                "options": [
+                  "It is automatically deleted after 30 days",
+                  "It remains available until manually deleted",
+                  "It is moved to S3 for cost savings",
+                  "It can only exist for 7 days"
+                ],
+                "correct": 1,
+                "explanation": "Unattached EBS Volumes persist until manually deleted, and you are billed for their provisioned capacity."
+              },
+              {
+                "question": "Which of the following is a use case for disabling 'Delete on Termination' for the root volume?",
+                "options": [
+                  "To reduce costs",
+                  "To preserve data when the instance is terminated",
+                  "To enable multi-AZ attachment",
+                  "To increase IOPS performance"
+                ],
+                "correct": 1,
+                "explanation": "Disabling 'Delete on Termination' for the root volume allows you to preserve data even when the instance is terminated."
+              },
+              {
+                "question": "What type of EBS Volumes are primarily discussed in the transcript?",
+                "options": [
+                  "IO1 and IO2",
+                  "GP2 and GP3",
+                  "ST1 and SC1",
+                  "Magnetic only"
+                ],
+                "correct": 1,
+                "explanation": "The transcript mentions GP2 and GP3 as the EBS Volume types used in the course."
+              },
+              {
+                "question": "Why might there be latency when using EBS Volumes?",
+                "options": [
+                  "Because they are physical drives",
+                  "Because they use the network for communication",
+                  "Because they are encrypted by default",
+                  "Because they are shared across multiple instances"
+                ],
+                "correct": 1,
+                "explanation": "EBS Volumes are network drives, so communication between the instance and the volume introduces some latency."
+              },
+              {
+                "question": "What is a key advantage of EBS Volumes in failover scenarios?",
+                "options": [
+                  "They automatically replicate across AZs",
+                  "They can be quickly detached and attached to another instance",
+                  "They are free during failover events",
+                  "They require no configuration"
+                ],
+                "correct": 1,
+                "explanation": "EBS Volumes can be detached from one instance and attached to another quickly, making them useful for failover scenarios."
               },
             ],
           };
+
+
           summaryResponse = `### Notes on Stephan Mareek's AWS AI Practitioner Exam Course - Section 1: Introduction to Cloud Computing
 
 ---

@@ -8,6 +8,7 @@ import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ScrollToTop from "./ScrollToTop";
 
 export default function QuizDisplay({ response }) {
+  console.log('response LOOK AT MEEE: ', JSON.stringify(response, null, 2));
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
   const [correctlyAnswered, setCorrectlyAnswered] = useState({});
@@ -16,10 +17,8 @@ export default function QuizDisplay({ response }) {
   const [mode, setSelectedMode] = useState("learning");
 
   const handleAnswerSelect = (questionIndex, optionIndex) => {
-    const correctIndex = getCorrectAnswerIndex(response[questionIndex]);
+    const correctIndex = response[questionIndex].correct;
     const isCorrect = optionIndex === correctIndex;
-
-    // For testing mode, only store the last selected answer
     const newAnswers =
       mode === "testing"
         ? [optionIndex]
@@ -44,13 +43,6 @@ export default function QuizDisplay({ response }) {
     // Show all explanations in testing mode after submit
     response.forEach((_, index) => {
       setShowExplanations((prev) => ({ ...prev, [index]: true }));
-    });
-  };
-
-  const getCorrectAnswerIndex = (question) => {
-    return question.options.findIndex((option) => {
-      const optionLetter = option.split(".")[0].trim().toUpperCase();
-      return optionLetter === question.correct.toUpperCase();
     });
   };
 
@@ -105,8 +97,11 @@ export default function QuizDisplay({ response }) {
       <h2 className="quizPage-title text-gray-300">Generated Quiz:</h2>
 
       {response.map((q, questionIndex) => {
-        const correctAnswerIndex = getCorrectAnswerIndex(q);
+        // ! this is not scalable, can you just get the correct answer index from the q object?
+        const correctAnswerIndex = q.correct;
+        console.log('correctAnswerIndex LOOK AT MEEE: ', correctAnswerIndex);
         const isCorrect = correctlyAnswered[questionIndex];
+        console.log('isCorrect LOOK AT MEEE: ', isCorrect);
 
         return (
           <div key={questionIndex} className="quiz-question text-gray-300">

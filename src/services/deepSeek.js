@@ -37,27 +37,44 @@ export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => 
     let difficulty = "exam level";
     let numQuestions = 15;
     let prompt = `
-    Generate a ${difficulty} difficulty quiz with ${numQuestions} questions with this transcript.
-    ${transcript}
-    For each question:
-    1. Phrase as a multiple choice question.
-    2. Provide 4 answer options (A, B, C, D).
-    3. Randomly choose the correct answer’s letter (A, B, C, D), so it’s not always in the same position.
-    4. Ensure that the correct answer's letter is **evenly distributed across all questions** — do NOT always place the answer in the middle (e.g., avoid always using B or C).
+    You are a JSON quiz generator.
+    
+    Given the transcript below, generate a quiz with:
+    - Difficulty: "${difficulty}"
+    - Number of questions: ${numQuestions}
+    
+    Transcript:
+    """${transcript}"""
+    
+    Instructions:
+    1. Generate exactly {{numQuestions}} multiple-choice questions based only on the content of the transcript.
+    2. For each question:
+      - Write a clear question.
+      - Choose the correct answer first.
+      - Create 3 plausible incorrect answers.
+      - Output the 4 options in **any order** (do NOT pre-label them with A/B/C/D).
+      - Track the **index (0–3)** of the correct answer in the 'correct' field.
+    3. Do NOT include answer letters like "A.", "B.", etc. in the 'options' array — return plain strings.
+    4. The correct index must reflect the correct answer's current position in the shuffled list.
+    5. Include a short explanation for why the answer is correct.
     5. Add a brief explanation.
     6. Include relevant AWS service names if applicable in the explanation.
 
-    **Return ONLY valid JSON. Do NOT include any extra text.**
-    Format the response exactly like this:
-    Example:
-      "quiz": [
+Only output valid JSON with this format — no extra text:
+    
+    Output format:
+    Return ONLY a valid JSON object in this structure. Do NOT add any other text, markdown, or commentary.
+    
     {
-      "question": "...?",
-      "options": ["...", "...", "...", "..."],
-      "correct": "A",
-      "explanation": "..."
+      "quiz": [
+        {
+          "question": "string",
+          "options": ["option", "option", "option", "option"],
+          "correct": 2,
+          "explanation": "string"
+        }
+      ]
     }
-  ]
     `;
 
     const completion = await openai.chat.completions.create({
