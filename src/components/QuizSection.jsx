@@ -1,24 +1,42 @@
-// This fill is heavy with a mix of TailwindCSS and custom CSS.
-// Todo: I need to clean up the CSS to be pure TailwindCSS
-
-import React, { useState } from "react";
-import "../styles/QuizSection.css";
+import React, { useState, useEffect } from "react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ScrollToTop from "./ScrollToTop";
+import "../styles/QuizSection.css";
+
 
 export default function QuizDisplay({ response }) {
-  console.log('response LOOK AT MEEE: ', JSON.stringify(response, null, 2));
+  console.log('response: ', JSON.stringify(response, null, 2));
+  const [processedQuestions, setProcessedQuestions] = useState(response);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
   const [correctlyAnswered, setCorrectlyAnswered] = useState({});
   const [submitted, setSubmitted] = useState(false);
-
   const [mode, setSelectedMode] = useState("learning");
 
+  // shuffle the answers on load
+  useEffect(() => {
+    if (response) {
+      const shuffledQuestions = response.map(shuffleQuestionOptions);
+      setProcessedQuestions(shuffledQuestions);
+    }
+  }, [response]);
+
+  /**
+   * Handles the logic when a user selects an answer option for a given question.
+   *
+   * - In "testing" mode: stores only the most recent selected option.
+   * - In "learning" mode: stores multiple selected options and shows explanation.
+   * - Updates the correct answer state if the selection is correct.
+   *
+   * @param {number} questionIndex - The index of the question being answered.
+   * @param {number} optionIndex - The index of the selected answer option.
+   */
   const handleAnswerSelect = (questionIndex, optionIndex) => {
-    const correctIndex = response[questionIndex].correct;
-    const isCorrect = optionIndex === correctIndex;
+    const question = processedQuestions[questionIndex];
+    if (!question) return;
+
+    const isCorrect = optionIndex === question.correct;
     const newAnswers =
       mode === "testing"
         ? [optionIndex]
@@ -40,8 +58,7 @@ export default function QuizDisplay({ response }) {
 
   const handleSubmit = () => {
     setSubmitted(true);
-    // Show all explanations in testing mode after submit
-    response.forEach((_, index) => {
+    processedQuestions.forEach((_, index) => {
       setShowExplanations((prev) => ({ ...prev, [index]: true }));
     });
   };
@@ -60,8 +77,48 @@ export default function QuizDisplay({ response }) {
     );
   };
 
+  const shuffleArray = (array) => {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // swap elements
+    }
+    return shuffled;
+  };
+  
+  
+  // Shuffles options for a single question and recalculates the correct index
+  const shuffleQuestionOptions = (question) => {
+    const shuffledOptions = shuffleArray(question.options);
+    const originalCorrectAnswer = question.options[question.correct];
+    const newCorrectIndex = shuffledOptions.indexOf(originalCorrectAnswer);
+  
+    return {
+      ...question,
+      options: shuffledOptions,
+      correct: newCorrectIndex,
+    };
+  };
+  
+  // Shuffles the entire quiz: questions and their options
+  const shuffleQuiz = () => {
+    const shuffledQuestions = shuffleArray(processedQuestions).map(shuffleQuestionOptions);
+    resetQuizStates();
+    setProcessedQuestions(shuffledQuestions);
+  };
+
+
   return (
     <div className="quiz-container">
+      {/* add a shuffle question button */}
+  {/* Shuffle Button */}
+  <button
+    onClick={shuffleQuiz}
+    className="text-sm px-4 py-1.5 bg-blue-500 hover:bg-blue-600 text-white rounded-full transition-colors"
+  >
+    Shuffle Q&A
+  </button>
+
       <div className="flex items-center justify-end relative">
         {/* Helper Icon with Tooltip */}
         <div className="group relative flex items-center mr-2">
@@ -96,7 +153,7 @@ export default function QuizDisplay({ response }) {
 
       <h2 className="quizPage-title text-gray-300">Generated Quiz:</h2>
 
-      {response.map((q, questionIndex) => {
+      {processedQuestions.map((q, questionIndex) => {
         // ! this is not scalable, can you just get the correct answer index from the q object?
         const correctAnswerIndex = q.correct;
         console.log('correctAnswerIndex LOOK AT MEEE: ', correctAnswerIndex);
@@ -163,6 +220,8 @@ export default function QuizDisplay({ response }) {
                   </li>
                 );
               })}
+              {/* only for testing while developing */}
+              <p>Correct Answer: {q.options[q.correct]}</p>
             </ul>
 
             {(mode === "learning" && isCorrect) ||
@@ -198,10 +257,11 @@ export default function QuizDisplay({ response }) {
         <div>
           <div className="submit-section">
             <button
-              className="submit-button"
+                className="submit-button"
               onClick={() => {
+                window.scrollTo(0, 0);
                 resetQuizStates();
-                ScrollToTop();
+                setProcessedQuestions(response.map(shuffleQuestionOptions));
               }}
               style={{ backgroundColor: "#2196f3" }}
             >
