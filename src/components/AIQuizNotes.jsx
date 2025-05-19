@@ -5,6 +5,7 @@ import remarkGfm from "remark-gfm";
 import QuizSection from "./QuizSection";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 
 import {
   openai,
@@ -20,8 +21,12 @@ export default function AIQuizNotes() {
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("quiz");
 
+  const [isEditing, setIsEditing] = useState(false);
+  const [markdownText, setMarkdownText] = useState(summary); // assuming summary is your initial markdown
+
   // ! this allows us not to exhausted the API calls
-  const [isDeveloping] = useState(true);
+  const { isDeveloping } = useDevelopingFlag();
+
 
   useEffect(() => {
     const generateContent = async () => {
@@ -38,7 +43,9 @@ export default function AIQuizNotes() {
           // checking if OpenAI client is available
           const quizRaw = await invokeDeepSeekQuizGenerator(
             state.transcript,
-            state.model
+            state.model,
+            state.difficulty,
+            state.numQuestions
           );
           const summaryRaw = await invokeDeepSeekSummaryGenerator(
             state.transcript,
@@ -339,6 +346,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
         setResponse(quizResponse.quiz);
         setSummary(summaryResponse);
+        setMarkdownText(summaryResponse); // making the summary editable
       } catch (error) {
         console.error("Generation error:", error);
       } finally {
@@ -408,32 +416,54 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           <QuizSection response={response} />
         </div>
       ) : (
-        <div className="mt-4 prose prose-lg prose-blue max-w-3xl mx-auto p-6 text-gray-200 shadow-lg rounded-lg leading-relaxed space-y-4">
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
-              table: ({ children }) => (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full border border-gray-700">
-                    {children}
-                  </table>
-                </div>
-              ),
-              th: ({ children }) => (
-                <th className="border border-gray-700 px-4 py-2 bg-gray-800 text-gray-200">
-                  {children}
-                </th>
-              ),
-              td: ({ children }) => (
-                <td className="border border-gray-700 px-4 py-2 text-gray-200">
-                  {children}
-                </td>
-              ),
-            }}
-          >{summary}</ReactMarkdown>
-        </div>
+        <div className="mt-4 max-w-3xl mx-auto p-6 shadow-lg rounded-lg">
+  <div className="flex justify-end mb-2">
+    <button
+      onClick={() => setIsEditing(!isEditing)}
+      className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+    >
+      {isEditing ? "Preview Notes" : "Edit Notes"}
+    </button>
+  </div>
+
+  {isEditing ? (
+    <textarea
+      value={markdownText}
+      // TODO: Might NOT WANT to allow more than 1000 characters as will blow up how much can be saved per User 
+      onChange={(e) => setMarkdownText(e.target.value)}
+      className="w-full h-130 p-4 text-sm bg-gray-800 text-gray-100 border border-gray-600 rounded"
+    />
+  ) : (
+    <div className="prose prose-lg prose-blue max-w-full text-gray-200 leading-relaxed space-y-4">
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
+        components={{
+          ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
+          table: ({ children }) => (
+            <div className="overflow-x-auto">
+              <table className="min-w-full border border-gray-700">
+                {children}
+              </table>
+            </div>
+          ),
+          th: ({ children }) => (
+            <th className="border border-gray-700 px-4 py-2 bg-gray-800 text-gray-200">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="border border-gray-700 px-4 py-2 text-gray-200">
+              {children}
+            </td>
+          ),
+        }}
+      >
+        {markdownText}
+      </ReactMarkdown>
+    </div>
+  )}
+</div>
       )}
     </div>
   );

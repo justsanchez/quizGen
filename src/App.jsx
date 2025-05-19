@@ -13,6 +13,8 @@ import { ToastContainer } from "react-toastify";
 // Toast Messages
 import "react-toastify/dist/ReactToastify.css";
 import { AuthProvider } from './contexts/AuthContext';
+import { DevelopingFlagProvider } from './contexts/DevelopingFlag';
+
 
 // Layout component for routes with Navbar
 const LayoutWithNavbar = () => {
@@ -30,6 +32,7 @@ export default function App() {
   return (
     <div className="w-screen min-h-screen flex flex-col bg-gray-900">
       <AuthProvider>
+        <DevelopingFlagProvider>
         <ScrollToTop />
         <Routes>
           {/* Routes with Navbar */}
@@ -45,6 +48,7 @@ export default function App() {
         </Routes>
         {/* Toast container for notifications */}
         <ToastContainer position="top-right" autoClose={2500} />
+      </DevelopingFlagProvider>
       </AuthProvider>
     </div>
   );

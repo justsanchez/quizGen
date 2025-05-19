@@ -28,14 +28,12 @@ try {
   console.error("Error initializing OpenAI client:", error);
 }
 
-export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => {
+export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel, difficulty, numQuestions) => {
   if (!openai) {
     throw new Error("OpenAI client is not initialized - check your API key");
   }
 
   try {
-    let difficulty = "exam level";
-    let numQuestions = 15;
     let prompt = `
     You are a JSON quiz generator.
     
@@ -47,7 +45,7 @@ export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel) => 
     """${transcript}"""
     
     Instructions:
-    1. Generate exactly {{numQuestions}} multiple-choice questions based only on the content of the transcript.
+    1. Generate exactly ${numQuestions} multiple-choice questions based only on the content of the transcript.
     2. For each question:
       - Write a clear question.
       - Choose the correct answer first.

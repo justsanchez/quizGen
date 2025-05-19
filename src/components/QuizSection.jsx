@@ -6,7 +6,7 @@ import "../styles/QuizSection.css";
 
 
 export default function QuizDisplay({ response }) {
-  console.log('response: ', JSON.stringify(response, null, 2));
+  // console.log('response: ', JSON.stringify(response, null, 2));
   const [processedQuestions, setProcessedQuestions] = useState(response);
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
@@ -109,7 +109,15 @@ export default function QuizDisplay({ response }) {
 
 
   return (
-    <div className="quiz-container">
+    <div
+      className="quiz-container"
+      style={{
+        boxShadow:
+          mode === "testing"
+            ? "0 5px 13px rgba(30, 144, 255, 0.3)" // soft Dodger Blue shadow
+            : "0 5px 13px rgba(144, 238, 144, 0.3)", // soft LightGreen shadow
+      }}
+    >
       {/* add a shuffle question button */}
   {/* Shuffle Button */}
   <button
@@ -156,9 +164,7 @@ export default function QuizDisplay({ response }) {
       {processedQuestions.map((q, questionIndex) => {
         // ! this is not scalable, can you just get the correct answer index from the q object?
         const correctAnswerIndex = q.correct;
-        console.log('correctAnswerIndex LOOK AT MEEE: ', correctAnswerIndex);
         const isCorrect = correctlyAnswered[questionIndex];
-        console.log('isCorrect LOOK AT MEEE: ', isCorrect);
 
         return (
           <div key={questionIndex} className="quiz-question text-gray-300">
@@ -196,7 +202,7 @@ export default function QuizDisplay({ response }) {
                         mode === "testing" && isSelected ? "selectedAnswer" : ""
                       }
                       ${showAsCorrect ? "correct" : ""}
-                      ${showAsIncorrect ? "incorrect" : ""}
+                      ${showAsIncorrect ? "incorrect disabled" : ""}
                       ${mode === "testing" && submitted ? "disabled" : ""}
                       ${
                         mode === "learning" && correctlyAnswered[questionIndex]
@@ -220,8 +226,8 @@ export default function QuizDisplay({ response }) {
                   </li>
                 );
               })}
-              {/* only for testing while developing */}
-              <p>Correct Answer: {q.options[q.correct]}</p>
+              {/* !only for testing while developing */}
+              {/* <p>Correct Answer: {q.options[q.correct]}</p> */}
             </ul>
 
             {(mode === "learning" && isCorrect) ||
