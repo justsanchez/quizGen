@@ -43,21 +43,22 @@ const LandingPage = () => {
   enhances this process by generating personalized quizzes that help you identify gaps in understanding, strengthen memory retention, and improve long-term learning.
 </p>
 
-            {/* <div className="mt-10 flex flex-col sm:flex-row gap-6 max-w-md">
-              <Link
+            <div className="mt-10 flex flex-col sm:flex-row gap-6 max-w-md">
+              {/* <Link
                 to="/QuizPage" 
                 className="flex-1 rounded-lg bg-blue-600 px-6 py-4 text-center text-lg font-semibold text-white shadow-lg hover:bg-blue-500 transition-colors"
               >
                 Generate Quiz Now
-              </Link>
+              </Link> */}
               
-              <Link
+              {/* FUTURE TICKET, dont overwhelm yourself */}
+              {/* <Link
                 to="/learn-more"
-                className="flex-1 rounded-lg border-2 border-blue-400 px-6 py-4 text-center text-lg font-semibold text-blue-400 hover:bg-gray-800 transition-colors"
+                className="block w-1/2 rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
               >
-                How It Works
-              </Link>
-            </div> */}
+                Learn More
+              </Link> */}
+            </div>
           </div>
 
           {/* Generate Box */}

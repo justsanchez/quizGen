@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
+
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -22,14 +24,22 @@ export default function AIQuizNotes() {
   const [activeTab, setActiveTab] = useState("quiz");
 
   const [isEditing, setIsEditing] = useState(false);
-  const [markdownText, setMarkdownText] = useState(summary); // assuming summary is your initial markdown
+
+  const [originalText, setOriginalText] = useState(); 
+  const [markdownText, setMarkdownText] = useState(); 
 
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
 
 
+
+  // ! function to check if the originalText (summary) has changed
+  function checkIfSummaryChanged() {
+    return markdownText !== originalText;
+  }
+
   useEffect(() => {
-    const generateContent = async () => {
+    const generateQuiz = async () => {
       console.log("Generating content...");
       console.log(state);
       console.log(state.transcript);
@@ -37,7 +47,7 @@ export default function AIQuizNotes() {
       if (!state?.transcript) return;
 
       try {
-        let quizResponse, summaryResponse;
+        let quizResponse;
 
         if (!isDeveloping && openai) {
           // checking if OpenAI client is available
@@ -47,17 +57,10 @@ export default function AIQuizNotes() {
             state.difficulty,
             state.numQuestions
           );
-          const summaryRaw = await invokeDeepSeekSummaryGenerator(
-            state.transcript,
-            state.model
-          );
 
           // Clean and parse responses
           quizResponse = JSON.parse(quizRaw.replace(/```json|```/g, "").trim());
-          summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
 
-          console.log("Quiz Response:", quizResponse);
-          console.log("Summary Response:", summaryResponse);
         } else {
           // Use placeholder data for development
           quizResponse = {
@@ -229,7 +232,55 @@ export default function AIQuizNotes() {
               },
             ],
           };
+        }
 
+        if (!openai) {
+          toast.warn(
+            "OpenAI client is not available. Demo data is being used.",
+            {
+              position: "top-center",
+              autoClose: 2500, 
+              hideProgressBar: false,
+              closeOnClick: true,
+              pauseOnHover: true,
+              draggable: true,
+            }
+          );
+        }
+
+        setResponse(quizResponse.quiz.map(shuffleQuestionOptions));
+        console.log("Quiz Response GETS SET:", quizResponse.quiz);
+      } catch (error) {
+        console.error("Generation error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    generateQuiz();
+  }, [state, isDeveloping]);
+
+  useEffect(() => {
+    const generateSummary = async () => {
+      console.log("Generating content...");
+      console.log(state);
+      console.log(state.transcript);
+      
+      if (!state?.transcript) return;
+
+      try {
+        let summaryResponse;
+
+        if (!isDeveloping && openai) {
+          const summaryRaw = await invokeDeepSeekSummaryGenerator(
+            state.transcript,
+            state.model
+          );
+
+          summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
+
+          console.log("Summary Response:", summaryResponse);
+        } else {
+          // Use placeholder data for development
 
           summaryResponse = `### Notes on Stephan Mareek's AWS AI Practitioner Exam Course - Section 1: Introduction to Cloud Computing
 
@@ -344,17 +395,16 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           );
         }
 
-        setResponse(quizResponse.quiz);
         setSummary(summaryResponse);
+        setOriginalText(summaryResponse); // setting the original text to the summary response
         setMarkdownText(summaryResponse); // making the summary editable
+
       } catch (error) {
         console.error("Generation error:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
 
-    generateContent();
+    generateSummary();
   }, [state, isDeveloping]);
 
   if (!state?.transcript) {
@@ -363,14 +413,25 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
 
+  const startTimeRef = useRef(null); // Declare once, at the top level
+
   useEffect(() => {
     if (isLoading) {
+      startTimeRef.current = Date.now();
+      console.log('start load cache');
+  
       const timer = setTimeout(() => {
         setShowTimeoutMessage(true);
       }, 20000); // 20 seconds
+  
       return () => clearTimeout(timer);
     } else {
       setShowTimeoutMessage(false);
+  
+      if (startTimeRef.current) {
+        const duration = (Date.now() - startTimeRef.current) / 1000;
+        console.log('cache load ok executed in', duration.toFixed(2), 'seconds');
+      }
     }
   }, [isLoading]);
 
@@ -403,7 +464,11 @@ These notes should help you follow along with Stephan Mareek's video and prepare
               className={`tab-button ${
                 activeTab === "summary" ? "active" : ""
               }`}
-              onClick={() => setActiveTab("summary")}
+              onClick={() => {
+                setActiveTab("summary");
+                // TODO: need to add a confirm dialog to warn the user that they will lose their changes if they are not saved
+                setIsEditing(false);
+              }}
             >
               Study Notes
             </button>
@@ -416,8 +481,17 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           <QuizSection response={response} />
         </div>
       ) : (
+        
         <div className="mt-4 max-w-3xl mx-auto p-6 shadow-lg rounded-lg">
   <div className="flex justify-end mb-2">
+  {checkIfSummaryChanged() && isEditing && (
+    <button
+      onClick={() => setMarkdownText(originalText)}
+      className="text-sm px-3 py-1 bg-blue-500 mr-2 text-white rounded hover:bg-blue-600"
+    >
+      Revert to Original
+    </button>
+  )}
     <button
       onClick={() => setIsEditing(!isEditing)}
       className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"

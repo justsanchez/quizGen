@@ -15,7 +15,7 @@ const DevelopingFlagContext = createContext();
 export function DevelopingFlagProvider({ children }) {
 
   // ! set the development flag here
-  const [isDeveloping, setIsDeveloping] = useState(false);
+  const [isDeveloping, setIsDeveloping] = useState(true);
 
   const value = {
     isDeveloping,

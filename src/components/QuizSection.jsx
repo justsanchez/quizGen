@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ScrollToTop from "./ScrollToTop";
 import "../styles/QuizSection.css";
 
 
-export default function QuizDisplay({ response }) {
+export default function QuizSection({ response }) {
   // console.log('response: ', JSON.stringify(response, null, 2));
   const [processedQuestions, setProcessedQuestions] = useState(response);
   const [selectedAnswers, setSelectedAnswers] = useState({});
@@ -15,12 +16,12 @@ export default function QuizDisplay({ response }) {
   const [mode, setSelectedMode] = useState("learning");
 
   // shuffle the answers on load
-  useEffect(() => {
-    if (response) {
-      const shuffledQuestions = response.map(shuffleQuestionOptions);
-      setProcessedQuestions(shuffledQuestions);
-    }
-  }, [response]);
+  // useEffect(() => {
+  //   if (response && !hasInitialized.current) {
+  //     const shuffledQuestions = response.map(shuffleQuestionOptions);
+  //     setProcessedQuestions(shuffledQuestions);
+  //   }
+  // }, [response]);
 
   /**
    * Handles the logic when a user selects an answer option for a given question.
@@ -76,29 +77,6 @@ export default function QuizDisplay({ response }) {
       prevMode === "learning" ? "testing" : "learning"
     );
   };
-
-  const shuffleArray = (array) => {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]; // swap elements
-    }
-    return shuffled;
-  };
-  
-  
-  // Shuffles options for a single question and recalculates the correct index
-  const shuffleQuestionOptions = (question) => {
-    const shuffledOptions = shuffleArray(question.options);
-    const originalCorrectAnswer = question.options[question.correct];
-    const newCorrectIndex = shuffledOptions.indexOf(originalCorrectAnswer);
-  
-    return {
-      ...question,
-      options: shuffledOptions,
-      correct: newCorrectIndex,
-    };
-  };
   
   // Shuffles the entire quiz: questions and their options
   const shuffleQuiz = () => {
@@ -114,8 +92,8 @@ export default function QuizDisplay({ response }) {
       style={{
         boxShadow:
           mode === "testing"
-            ? "0 5px 13px rgba(30, 144, 255, 0.3)" // soft Dodger Blue shadow
-            : "0 5px 13px rgba(144, 238, 144, 0.3)", // soft LightGreen shadow
+            ? "0 2px 13px rgba(30, 144, 255, 0.3)" // soft Dodger Blue shadow
+            : "0 2px 13px rgba(144, 238, 144, 0.3)", // soft LightGreen shadow
       }}
     >
       {/* add a shuffle question button */}
@@ -259,7 +237,6 @@ export default function QuizDisplay({ response }) {
         </div>
       )}
       {mode === "testing" && submitted && (
-        // ! Not fully tested
         <div>
           <div className="submit-section">
             <button

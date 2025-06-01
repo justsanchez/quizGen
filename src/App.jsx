@@ -4,6 +4,7 @@ import PromptSection from "./components/PromptPage";
 import AIQuizNotes from "./components/AIQuizNotes";
 import LandingPage from "./components/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
+import LearnMore from "./components/LearnMore";
 
 // Firebase Auth
 import Login from "./components/auth/Login";
@@ -40,6 +41,7 @@ export default function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/prompt" element={<PromptSection />} />
             <Route path="/quizNotes" element={<AIQuizNotes />} />
+            <Route path="/learn-more" element={<LearnMore />} />
           </Route>
 
           {/* Routes without Navbar */}
