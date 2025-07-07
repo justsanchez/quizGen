@@ -4,13 +4,15 @@ import "../styles/AIQuizNotes.css";
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 
 export default function PromptSection() {
-  const [input, setInput] = useState("");
+  const [prompt, setPrompt] = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");
   const [difficulty, setDifficulty] = useState("medium");
   const [numQuestions, setNumQuestions] = useState(10);
-  const [errorMessage, setErrorMessage] = useState("");
+  const [promptErrorMessage, setPromptErrorMessage] = useState("");
+  const [specialInstructionsErrorMessage, setSpecialInstructionsErrorMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState("deepseek-chat");
   const navigate = useNavigate();
+  let [showAdvanced, setShowAdvanced] = useState(false);
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
 
@@ -31,20 +33,40 @@ export default function PromptSection() {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const wordCount = input.trim().split(/\s+/).length;
-    if (wordCount < 20 && !isDeveloping) {
-      setErrorMessage("Please enter at least 20 words to generate a quiz.");
-      console.log("errorMessage:", errorMessage);
-      return;
+    const wordCount = prompt.trim().split(/\s+/).length;
+    let errorFlag = false;
+
+    if (wordCount < 20) {
+      setPromptErrorMessage("Please enter at least 20 words to generate a quiz.");
+      errorFlag = true;
     }
+    if (wordCount > 1750) {
+      setPromptErrorMessage("Please keep your input under 1750 words.");
+      errorFlag = true;
+    }
+
+    const specialInstructionsCount = specialInstructions.trim().split(/\s+/).length;
+    if (specialInstructions && specialInstructionsCount < 20) {
+      setSpecialInstructionsErrorMessage("Please enter at least 20 words to generate a quiz.");
+      errorFlag = true;
+    }
+
+    if (specialInstructions && specialInstructionsCount > 100) {
+      setSpecialInstructionsErrorMessage("Please keep your special instructions under 100 words.");
+      errorFlag = true;
+    } 
+
     // Proceed with quiz generation logic...
-    if (!input.trim()) return;
-    setErrorMessage(""); // Clear message if valid
+    if (errorFlag && !isDeveloping) return;
+    
+    setPromptErrorMessage(""); // Clear message if valid
+    setSpecialInstructionsErrorMessage(""); // Clear message if valid
 
     // Navigate to quiz page with state
     navigate("/quizNotes", {
       state: {
-        transcript: input,
+        transcript: prompt,
+        specialInstructions: specialInstructions,
         model: selectedModel,
         difficulty: difficulty,
         numQuestions: numQuestions,
@@ -57,41 +79,11 @@ export default function PromptSection() {
       <h2 className="quizPage-title text-gray-100 pt-10">AI Quiz Generator</h2>
 
       <form onSubmit={handleSubmit} className="quizPage-form border-none">
-        <div className="form-group text-gray-100">
-          <label htmlFor="model">Select Model:</label>
-          <div className="grid gap-3">
-            {modelOptions.map((model) => (
-              <div
-                key={model.id}
-                onClick={() => setSelectedModel(model.id)}
-                className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${
-                  selectedModel === model.id
-                    ? "border-blue-500 bg-gray-700 shadow-lg"
-                    : "border-gray-600 hover:border-gray-500 bg-gray-800 hover:bg-gray-750"
-                }`}
-              >
-                <div className="flex items-center">
-                  <div
-                    className={`h-4 w-4 rounded-full border mr-3 ${
-                      selectedModel === model.id
-                        ? "bg-blue-500 border-blue-500"
-                        : "bg-transparent border-gray-400"
-                    }`}
-                  />
-                  <h3 className="font-medium text-gray-100">{model.name}</h3>
-                </div>
-                <p className="text-sm text-gray-400 mt-2 pl-7">
-                  {model.description}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
 
         {/* Add the difficulty and the number of questions */}
-        <div className="pt-3 text-gray-100 flex flex-col items-center justify-center gap-6 mb-8 md:flex-row">
-          <div className="w-64">
-            <label className="block text-sm font-medium text-gray-100 mb-1 text-center md:text-left">
+        <div className="pt-3 text-gray-100 flex flex-col items-center justify-center gap-6 mb-8 md:flex-row w-full">
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-100 mb-1 md:text-left">
               Select Difficulty
             </label>
             <select
@@ -107,8 +99,8 @@ export default function PromptSection() {
           </div>
 
           {/* Question Count Selector */}
-          <div className="w-64">
-            <label className="block text-sm font-medium text-gray-100 mb-1 text-center md:text-left">
+          <div className="w-1/2">
+            <label className="block text-sm font-medium text-gray-100 mb-1 md:text-left">
               Number of Questions
             </label>
             <select
@@ -133,42 +125,115 @@ export default function PromptSection() {
           </div>
         </div>
 
+
         <div className="form-group text-gray-100 mt-5">
-          <label htmlFor="input">Enter your text here:</label>
+          <label htmlFor="prompt">Enter your text here:</label>
           <textarea
-            id="input"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
+            id="prompt"
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
             placeholder="Type or copy and paste your text here..."
             rows={10}
-            required
             className="bg-gray-800 focus:outline-none"
           />
-          {errorMessage && (
-            <p className="text-red-500 text-sm">{errorMessage}</p>
+          {promptErrorMessage && (
+            <p className="text-red-500 text-sm">{promptErrorMessage}</p>
           )}
           <p className="text-gray-400 text-sm mt-2 text-right">
-            {input.length} characters
+            {prompt.trim() ? 
+              `Word Count: ${prompt.trim().split(/\s+/).length}` 
+              : 'Word Count: 0'}
           </p>
         </div>
 
-        {/* <div className="form-group text-gray-100 pb-5">
-          <label htmlFor="input">
-            Enter special instructions here (optional):
-          </label>
-          <textarea
-            id="input"
-            value={specialInstructions}
-            onChange={(e) => setSpecialInstructions(e.target.value)}
-            placeholder="Enter special instructions..."
-            rows={3}
-            className="bg-gray-800 focus:outline-none"
-          />
-        </div> */}
+        {/* ! MAKE A ADVANCED SECTION */}
 
-        <button type="submit" className="generate-button">
-          Generate
-        </button>
+        <div className="text-gray-100 mt-5 w-full">
+          <button type="button" onClick={() => setShowAdvanced(!showAdvanced)} className="pb-5 flex items-center gap-2 toggle-button justify-end ml-auto">
+            Toggle Advanced Section
+            <svg
+              className={`w-4 h-4 transition-transform ${showAdvanced ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+        </div>
+
+        {showAdvanced && (
+          <div className="pb-25">
+            <div className="form-group text-gray-100">
+              <label htmlFor="model">Select Model:</label>
+              <div className="grid gap-3">
+                {modelOptions.map((model) => (
+                  <div
+                    key={model.id}
+                    onClick={() => setSelectedModel(model.id)}
+                    className={`p-4 rounded-lg border-2 cursor-pointer transition-all duration-200 ${selectedModel === model.id
+                      ? "border-blue-500 bg-gray-700 shadow-lg"
+                      : "border-gray-600 hover:border-gray-500 bg-gray-800 hover:bg-gray-750"
+                      }`}
+                  >
+                    <div className="flex items-center">
+                      <div
+                        className={`h-4 w-4 rounded-full border mr-3 ${selectedModel === model.id
+                          ? "bg-blue-500 border-blue-500"
+                          : "bg-transparent border-gray-400"
+                          }`}
+                      />
+                      <h3 className="font-medium text-gray-100">{model.name}</h3>
+                    </div>
+                    <p className="text-sm text-gray-400 mt-2 pl-7">
+                      {model.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="form-group text-gray-100 mt-5 w-full pb-4">
+              <label htmlFor="specialInstructions">
+                Enter special instructions here (optional):
+              </label>
+              <textarea
+                id="specialInstructions"
+                value={specialInstructions}
+                onChange={(e) => setSpecialInstructions(e.target.value)}
+                placeholder="Actually set up a template for the special instructions..."
+                rows={6}
+                className="bg-gray-800 focus:outline-none"
+              />
+              {specialInstructionsErrorMessage && (
+                <p className="text-red-500 text-sm">{specialInstructionsErrorMessage}</p>
+              )}
+            </div>
+          </div>
+
+        )}
+
+{/* This needs to be different for mobile */}
+<div
+  className="
+    fixed 
+    bottom-0 
+    left-0 
+    right-0 
+    bg-gray-900 
+    border-t border-gray-700 
+    flex justify-end 
+    p-4 
+    pr-10
+    z-1
+    md:left-64
+    phone:p-1
+  "
+>
+  <button type="submit" className="max-w-72 generate-button">
+    Generate
+  </button>
+</div>
       </form>
     </div>
   );

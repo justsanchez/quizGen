@@ -20,7 +20,7 @@ export function AuthProvider({ children }) {
     currentUser,
     userLoggedIn: !!currentUser,
     loading
-  };
+  };  
 
   return (
     <AuthContext.Provider value={value}>

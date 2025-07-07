@@ -16,7 +16,7 @@ export function DevelopingFlagProvider({ children }) {
 
   // ! set the development flag here
   const [isDeveloping, setIsDeveloping] = useState(true);
-
+ 
   const value = {
     isDeveloping,
     setIsDeveloping

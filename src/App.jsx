@@ -1,10 +1,23 @@
 import { BrowserRouter as Router, Routes, Route, Outlet } from "react-router-dom";
-import Navbar from "./components/NavBar";
 import PromptSection from "./components/PromptPage";
 import AIQuizNotes from "./components/AIQuizNotes";
 import LandingPage from "./components/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 import LearnMore from "./components/LearnMore";
+import Library from "./components/Library";
+
+// Quiz Detail - 
+import QuizDetail from "./components/QuizDetail";
+
+import { useAuth } from "./contexts/AuthContext";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
+// Layouts
+import Layout from "./components/layouts/Layout";
+
+// Landing Page Navbar
+import Navbar from "./components/NavBar";
 
 // Firebase Auth
 import Login from "./components/auth/Login";
@@ -21,6 +34,18 @@ import { DevelopingFlagProvider } from './contexts/DevelopingFlag';
 const LayoutWithNavbar = () => {
   return (
     <>
+      <Layout />
+      <main className="flex-1 w-full p-0 m-0">
+       {/* <Outlet /> */}
+      </main>
+    </>
+  );
+};
+
+// Layout component for routes without Navbar
+const LandingPageNavbar = () => {
+  return (
+    <>
       <Navbar />
       <main className="flex-1 w-full p-0 m-0">
         <Outlet />
@@ -30,6 +55,7 @@ const LayoutWithNavbar = () => {
 };
 
 export default function App() {
+
   return (
     <div className="w-screen min-h-screen flex flex-col bg-gray-900">
       <AuthProvider>
@@ -38,15 +64,28 @@ export default function App() {
         <Routes>
           {/* Routes with Navbar */}
           <Route element={<LayoutWithNavbar />}>
-            <Route path="/" element={<LandingPage />} />
             <Route path="/prompt" element={<PromptSection />} />
             <Route path="/quizNotes" element={<AIQuizNotes />} />
             <Route path="/learn-more" element={<LearnMore />} />
+            <Route path="/library" element={<Library />} />
+            <Route path="/layout" element={<Layout />} />
+            <Route path="/quiz/:id" element={<QuizDetail />} />
           </Route>
 
           {/* Routes without Navbar */}
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
+          <Route element={<LandingPageNavbar />}>
+            <Route path="/" element={<LandingPage />} />
+          </Route>
+          {/* if signed in always redirect to /prompt */}
+          <Route element={<LayoutWithNavbar />}>
+            <Route path="/prompt" element={<PromptSection />} />
+          </Route>
+
+
+
+
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
         </Routes>
         {/* Toast container for notifications */}
         <ToastContainer position="top-right" autoClose={2500} />

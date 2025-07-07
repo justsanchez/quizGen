@@ -1,11 +1,22 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
+
+// TODO: Keep this page as a landing page, first thing they see. no side bar until they log in
 
 const LandingPage = () => {
   const { userLoggedIn } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (userLoggedIn) {
+      navigate('/prompt');
+    }
+  }, [userLoggedIn]);
   return (
-<div className="relative isolate overflow-hidden bg-gray-900 px-6 py-16 sm:px-16 md:py-32 min-h-screen">
+<div className=" bg-gray-900 px-6 py-16 sm:px-16 md:py-32 min-h-screen">
       <svg
         viewBox="0 0 1024 1024"
         className="absolute right-0 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-y-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] lg:left-auto lg:right-1/2 lg:-mr-80"

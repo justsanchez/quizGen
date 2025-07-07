@@ -28,7 +28,7 @@ try {
   console.error("Error initializing OpenAI client:", error);
 }
 
-export const invokeDeepSeekQuizGenerator = async (transcript, selectedModel, difficulty, numQuestions) => {
+export const invokeDeepSeekQuizGenerator = async (transcript, specialInstructions, selectedModel, difficulty, numQuestions) => {
   if (!openai) {
     throw new Error("OpenAI client is not initialized - check your API key");
   }
