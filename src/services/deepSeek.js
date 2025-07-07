@@ -33,6 +33,10 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
     throw new Error("OpenAI client is not initialized - check your API key");
   }
 
+  // Validate and set default model
+  const validModels = ['deepseek-chat', 'deepseek-r1'];
+  const model = validModels.includes(selectedModel) ? selectedModel : 'deepseek-chat';
+
   try {
     let prompt = `
     You are a JSON quiz generator.
@@ -76,7 +80,7 @@ Only output valid JSON with this format — no extra text:
     `;
 
     const completion = await openai.chat.completions.create({
-      model: selectedModel, 
+      model: model, 
       messages: [
         { role: "system", content: "You are a helpful AI quiz generator..." },
         { role: "user", content: prompt } 

@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import "../styles/AIQuizNotes.css";
+import "../styles/AIQuizNotes.css"; // todo: out of place, refactor this
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 
 export default function PromptSection() {

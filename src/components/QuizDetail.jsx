@@ -85,8 +85,7 @@ export default function QuizDetail() {
 
     return (
         <div className="container mx-auto p-4 text-gray-200">
-            <h1>{quizSummary || 'No summary available'}</h1>
-            <h2>{quizQuestions?.quiz_data || 'No questions available'}</h2>
+            <h1>just vibes</h1>
         </div>
     );
 }

@@ -249,7 +249,7 @@ export default function AIQuizNotes() {
         }
 
         setResponse(quizResponse.quiz.map(shuffleQuestionOptions));
-        console.log("Quiz Response GETS SET:", quizResponse.quiz);
+        console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.quiz', quizResponse.quiz);
       } catch (error) {
         console.error("Generation error:", error);
       } finally {
@@ -269,6 +269,7 @@ export default function AIQuizNotes() {
 
       try {
         let summaryResponse;
+        console.log('LOOOK AT MEEE: state.model', state.model);
 
         if (!isDeveloping && openai) {
           const summaryRaw = await invokeDeepSeekSummaryGenerator(
@@ -277,6 +278,7 @@ export default function AIQuizNotes() {
           );
 
           summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
+          console.log('NEED TO KNOW HOW THIS WORKS 2 -> summaryResponse', summaryResponse);
 
           console.log("Summary Response:", summaryResponse);
         } else {
