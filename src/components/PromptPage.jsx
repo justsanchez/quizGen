@@ -70,6 +70,7 @@ export default function PromptSection() {
         model: selectedModel,
         difficulty: difficulty,
         numQuestions: numQuestions,
+        mode: 'generate'
       },
     });
   };

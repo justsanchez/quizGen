@@ -16,7 +16,7 @@ const LandingPage = () => {
     }
   }, [userLoggedIn]);
   return (
-<div className=" bg-gray-900 px-6 py-16 sm:px-16 md:py-32 min-h-screen">
+    <div className=" bg-gray-900 px-6 py-16 sm:px-16 md:py-32 min-h-screen">
       <svg
         viewBox="0 0 1024 1024"
         className="absolute right-0 top-1/2 -z-10 h-[64rem] w-[64rem] -translate-y-1/2 [mask-image:radial-gradient(closest-side,white,transparent)] lg:left-auto lg:right-1/2 lg:-mr-80"
@@ -45,14 +45,14 @@ const LandingPage = () => {
               Enhance Your Study Sessions with <strong className="text-blue-300">quizGen</strong>
             </h1>
             <p className="mt-6 text-lg text-gray-300 max-w-2xl">
-  Quizzing yourself is one of the most effective study techniques,
-  reinforcing knowledge through&nbsp;
-  <strong className="text-blue-300">active recall</strong>. Using 
-  <span className="animated-ai font-bold bg-gradient-to-r from-white via-blue-300 to-blue-500 bg-clip-text text-transparent animate-gradient">
-    &nbsp;Artificial Intelligence&nbsp;
-  </span>
-  enhances this process by generating personalized quizzes that help you identify gaps in understanding, strengthen memory retention, and improve long-term learning.
-</p>
+              Quizzing yourself is one of the most effective study techniques,
+              reinforcing knowledge through&nbsp;
+              <strong className="text-blue-300">active recall</strong>. Using
+              <span className="animated-ai font-bold bg-gradient-to-r from-white via-blue-300 to-blue-500 bg-clip-text text-transparent animate-gradient">
+                &nbsp;Artificial Intelligence&nbsp;
+              </span>
+              enhances this process by generating personalized quizzes that help you identify gaps in understanding, strengthen memory retention, and improve long-term learning.
+            </p>
 
             <div className="mt-10 flex flex-col sm:flex-row gap-6 max-w-md">
               {/* <Link
@@ -61,7 +61,7 @@ const LandingPage = () => {
               >
                 Generate Quiz Now
               </Link> */}
-              
+
               {/* FUTURE TICKET, dont overwhelm yourself */}
               {/* <Link
                 to="/learn-more"
@@ -121,14 +121,14 @@ const LandingPage = () => {
                 </Link>
               ) : (
                 <Link
-                to="/register"
-                className="mt-8 block w-full rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
-              >
-                Generate Now
-              </Link>
+                  to="/register"
+                  className="mt-8 block w-full rounded-md bg-blue-600 px-4 py-3 text-center font-medium text-white shadow hover:bg-blue-500 transition-colors"
+                >
+                  Generate Now
+                </Link>
               )}
 
-              
+
             </div>
           </div>
         </div>

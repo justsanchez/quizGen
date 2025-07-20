@@ -81,9 +81,6 @@ export default function App() {
             <Route path="/prompt" element={<PromptSection />} />
           </Route>
 
-
-
-
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
         </Routes>

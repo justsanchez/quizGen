@@ -61,6 +61,13 @@ export default function AIQuizNotes() {
           // Clean and parse responses
           quizResponse = JSON.parse(quizRaw.replace(/```json|```/g, "").trim());
 
+          console.log('check me out here START QUIZ OPENAI');
+          console.log('quizRaw', quizRaw);
+          console.log('quizResponse', quizResponse);
+          console.log('quizResponse.quiz', quizResponse.quiz);
+          console.log('quizResponse', JSON.stringify(quizResponse, null, 2));
+          console.log('check me out here END QUIZ OPENAI');
+
         } else {
           // Use placeholder data for development
           quizResponse = {
@@ -256,7 +263,9 @@ export default function AIQuizNotes() {
         setIsLoading(false);
       }
     };
-    generateQuiz();
+    if (state.mode === 'generate') {
+      generateQuiz();
+    }
   }, [state, isDeveloping]);
 
   useEffect(() => {
@@ -269,7 +278,6 @@ export default function AIQuizNotes() {
 
       try {
         let summaryResponse;
-        console.log('LOOOK AT MEEE: state.model', state.model);
 
         if (!isDeveloping && openai) {
           const summaryRaw = await invokeDeepSeekSummaryGenerator(
@@ -278,9 +286,12 @@ export default function AIQuizNotes() {
           );
 
           summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
-          console.log('NEED TO KNOW HOW THIS WORKS 2 -> summaryResponse', summaryResponse);
 
-          console.log("Summary Response:", summaryResponse);
+          console.log('check me out here START SUMMARY OPENAI');
+          console.log('summaryRaw', JSON.stringify(summaryRaw, null, 2));
+          console.log('summaryResponse', JSON.stringify(summaryResponse, null, 2));
+          console.log('check me out here END SUMMARY OPENAI');
+
         } else {
           // Use placeholder data for development
 
@@ -406,11 +417,50 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       }
     };
 
-    generateSummary();
+    if (state.mode === 'generate') {
+      generateSummary();
+    }
   }, [state, isDeveloping]);
 
-  if (!state?.transcript) {
-    return <div>No transcript provided. Please go back and enter one.</div>;
+  useEffect(() => {
+    const loadData = async () => {
+      console.log("Loading data...");
+      console.log(state);
+      
+      if (!state?.quizFetch || !state?.summaryFetch) return;
+
+      try {
+        let quizLoad;
+        let summaryLoad;
+
+        quizLoad = state.quizFetch
+        console.log('INSIDE loadData | quizLoad', JSON.stringify(quizLoad, null, 2));
+        summaryLoad = state.summaryFetch
+        console.log('INSIDE loadData | summaryLoad', JSON.stringify(summaryLoad, null, 2));
+
+        // TOOD: need to handle error requests in here maybe or in the quizDetail page
+
+
+        setResponse(quizLoad.quiz.map(shuffleQuestionOptions));
+        setSummary(summaryLoad);
+        setOriginalText(summaryLoad); // setting the original text to the summary response
+        setMarkdownText(summaryLoad); // making the summary editable
+
+      } catch (error) {
+        console.error("Loading error:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (state.mode === 'load') {
+      console.log('INSIDE loadData | state', JSON.stringify(state, null, 2));
+      loadData();
+    }
+  }, [state]);
+
+  if (!state?.transcript && !state?.summaryFetch && !state?.quizFetch) {
+    return <div>No transcript or summary or quiz provided. Please go back and enter one.</div>;
   }
 
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
@@ -420,7 +470,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
   useEffect(() => {
     if (isLoading) {
       startTimeRef.current = Date.now();
-      console.log('start load cache');
+      console.log('start load cache | just checking how long it takes to load responses');
   
       const timer = setTimeout(() => {
         setShowTimeoutMessage(true);

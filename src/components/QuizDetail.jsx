@@ -1,91 +1,98 @@
-import React, { useState } from "react";
-import { useParams } from "react-router-dom";
+// todo: might consolidate this with the library page
+// this page just loads the quiz data from the database and then sends it to the AIQuizNotes page
+
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "../supabase/client";
 import { useAuth } from "../contexts/AuthContext";
-import { useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+
+// Cache key generator
+const getCacheKey = (id, type) => `quiz_cache_${id}_${type}`;
 
 export default function QuizDetail() {
-    
     const { id } = useParams();
-    const { userLoggedIn, currentUser } = useAuth();
+    const { userLoggedIn } = useAuth();
     const navigate = useNavigate();
-    const [quizQuestions, setQuizQuestions] = useState(null);
-    const [quizSummary, setQuizSummary] = useState(null);
     const [loading, setLoading] = useState(true);
-    
+
     useEffect(() => {
-        const fetchQuizQuestions = async () => {
+        if (!userLoggedIn) {
+            navigate('/login');
+            return;
+        }
+
+        const fetchData = async () => {
             try {
-                const { data, error } = await supabase
-                    .from('quizzes')
-                    .select('quiz_data')
-                    .eq('quiz_set_id', id);
-                if (error) throw error;
-                console.log('data 1', data[0].quiz_data);
-                for (let i = 0; i < data[0].quiz_data.length; i++) {
-                    console.log('within loop', data[0].quiz_data[i]);
-                    console.log('within loop index', i);
-                };
-                console.log('data 2', data);
-                console.log('data 3', data[0]);
-                console.log('data 4', data[0].quiz_data);
-                console.table(data[0].quiz_data);
-                setQuizQuestions(data[0].quiz_data);
-                setLoading(false);
+                // Check cache first
+                const cachedQuiz = localStorage.getItem(getCacheKey(id, 'quiz'));
+                const cachedSummary = localStorage.getItem(getCacheKey(id, 'summary'));
+
+                if (cachedQuiz && cachedSummary) {
+                    // navigateWithData(JSON.parse(cachedQuiz), JSON.parse(cachedSummary));
+                    // return;
+                }
+
+                // Fetch fresh data if no cache
+                const [quizRes, summaryRes] = await Promise.all([
+                    supabase.from('quizzes').select('quiz_data').eq('quiz_set_id', id),
+                    supabase.from('summaries').select('summary_content').eq('quiz_set_id', id)
+                ]);
+
+                if (quizRes.error || summaryRes.error) throw new Error('Fetch failed');
+
+                console.log('quizRes', quizRes.data[0].quiz_data);
+                console.log('summaryRes', summaryRes.data[0].summary_content);
+
+                // Cache the data
+                localStorage.setItem(
+                    getCacheKey(id, 'quiz'),
+                    JSON.stringify(quizRes.data[0].quiz_data)
+                );
+                localStorage.setItem(
+                    getCacheKey(id, 'summary'),
+                    JSON.stringify(summaryRes.data[0].summary_content)
+                );
+
+                navigateWithData(quizRes.data[0].quiz_data, summaryRes.data[0].summary_content);
             } catch (error) {
-                console.error('Error fetching quiz:', error);
+                console.error('Error:', error);
+                navigate('/error'); // Add your error handling route
+            } finally {
                 setLoading(false);
             }
-
         };
 
-        if (userLoggedIn) {
-            fetchQuizQuestions();
-        }
-    }, [userLoggedIn, id]);
-    
-    useEffect(() => {
-        const fetchQuizSummary = async () => {
-            try {
-                const { data, error } = await supabase
-                    .from('summaries')
-                    .select('summary_content')
-                    .eq('quiz_set_id', id);
-                if (error) throw error;
-                console.log(data[0].summary_content);
-                setQuizSummary(data[0].summary_content);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching quiz summary:', error);
-                setLoading(false);
-            }
-
+        const navigateWithData = (quizData, summaryData) => {
+            console.log('quizData | Look at me', JSON.stringify(quizData));
+            console.log('summaryData | Look at me', JSON.stringify(summaryData));
+            navigate("/quizNotes", {
+                state: {
+                    transcript: '',
+                    specialInstructions: '',
+                    model: '',
+                    difficulty: '',
+                    numQuestions: '',
+                    mode: 'load',
+                    quizFetch: quizData,
+                    summaryFetch: summaryData
+                },
+                replace: true // Prevents back button issues
+            });
         };
 
-        if (userLoggedIn) {
-            fetchQuizSummary();
-        }
-    }, [userLoggedIn, id]);
-    
+        fetchData();
+    }, [userLoggedIn, id, navigate]);
+
     if (loading) {
-        return <div className="container mx-auto p-4 text-gray-200">
-            <div className="animate-pulse">
-                <div className="h-8 w-48 bg-gray-500 rounded mb-4"></div>
-                <div className="h-6 w-64 bg-gray-500 rounded"></div>
+        return (
+            <div className="container mx-auto p-4 text-gray-200">
+                <div className="animate-pulse">
+                    <div className="h-8 w-48 bg-gray-500 rounded mb-4"></div>
+                    <div className="h-6 w-64 bg-gray-500 rounded"></div>
+                </div>
             </div>
-        </div>;
+        );
     }
 
-    if (!quizSummary || !quizQuestions) {
-        return <div className="container mx-auto p-4 text-gray-200">
-            <p>No quiz data available</p>
-        </div>;
-    }
-
-    return (
-        <div className="container mx-auto p-4 text-gray-200">
-            <h1>just vibes</h1>
-        </div>
-    );
+    return null; // This component doesn't render anything visible
 }

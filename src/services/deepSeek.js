@@ -59,8 +59,8 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
     3. Do NOT include answer letters like "A.", "B.", etc. in the 'options' array — return plain strings.
     4. The correct index must reflect the correct answer's current position in the shuffled list.
     5. Include a short explanation for why the answer is correct.
-    5. Add a brief explanation.
-    6. Include relevant AWS service names if applicable in the explanation.
+    6. Add a brief explanation.
+    7. Include relevant AWS service names if applicable in the explanation.
 
 Only output valid JSON with this format — no extra text:
     
