@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/AIQuizNotes.css"; // todo: out of place, refactor this
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
+import { v4 as uuidv4 } from 'uuid';
 
 export default function PromptSection() {
   const [prompt, setPrompt] = useState("");
@@ -62,6 +63,10 @@ export default function PromptSection() {
     setPromptErrorMessage(""); // Clear message if valid
     setSpecialInstructionsErrorMessage(""); // Clear message if valid
 
+    // generate a random id for the quiz
+    const quizSummaryId = uuidv4(); // cspell:ignore uuidv4
+
+    
     // Navigate to quiz page with state
     navigate("/quizNotes", {
       state: {
@@ -70,6 +75,7 @@ export default function PromptSection() {
         model: selectedModel,
         difficulty: difficulty,
         numQuestions: numQuestions,
+        quizSummaryId: quizSummaryId,
         mode: 'generate'
       },
     });

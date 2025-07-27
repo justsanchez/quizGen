@@ -1,3 +1,4 @@
+// separated quiz section from AIQuizNotes.jsx due to being too large 
 import React, { useState, useEffect } from "react";
 import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

@@ -38,6 +38,33 @@ export default function AIQuizNotes() {
     return markdownText !== originalText;
   }
 
+  // * function to cache the quiz response, with an expiry time
+  function cacheWithExpiry(key, value, ttl = 1000 * 60 * 60) {
+    const now = Date.now();
+    const item = {
+      value,
+      // todo: make it 3 hours just in case
+      expiry: now + ttl, // 1 hour by default
+    };
+    localStorage.setItem(key, JSON.stringify(item));
+  }
+
+  function getCachedItem(key) {
+    // ! to test caching, use localStorage.clear() in the console
+    const itemStr = localStorage.getItem(key);
+    if (!itemStr) return null;
+  
+    const item = JSON.parse(itemStr);
+    if (Date.now() > item.expiry) {
+      localStorage.removeItem(key);
+      return null;
+    }
+  
+    return item.value;
+  }
+  // ! something to add, if the user refreshes the page in the middle of generating the quiz and summary, and only the summary is generated, it will not properly save the quiz.
+  // fix: might need to add logic to the isLoading state to check if the quiz is generated and the summary is generated to safely save both the quiz and summary.
+
   useEffect(() => {
     const generateQuiz = async () => {
       console.log("Generating content...");
@@ -67,6 +94,12 @@ export default function AIQuizNotes() {
           console.log('quizResponse.quiz', quizResponse.quiz);
           console.log('quizResponse', JSON.stringify(quizResponse, null, 2));
           console.log('check me out here END QUIZ OPENAI');
+
+          // cache the quiz response
+          cacheWithExpiry(
+            `quiz_cache_${state.quizSummaryId}_quiz`,
+            quizResponse
+          );
 
         } else {
           // Use placeholder data for development
@@ -263,8 +296,13 @@ export default function AIQuizNotes() {
         setIsLoading(false);
       }
     };
-    if (state.mode === 'generate') {
+    
+    const cachedQuiz = getCachedItem(`quiz_cache_${state.quizSummaryId}_quiz`);
+    if (state.mode === 'generate' && !cachedQuiz) {
       generateQuiz();
+    } else {
+      setResponse(cachedQuiz.quiz.map(shuffleQuestionOptions));
+      setIsLoading(false);
     }
   }, [state, isDeveloping]);
 
@@ -408,6 +446,11 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           );
         }
 
+        cacheWithExpiry(
+          `quiz_cache_${state.quizSummaryId}_summary`,
+          summaryResponse
+        );
+
         setSummary(summaryResponse);
         setOriginalText(summaryResponse); // setting the original text to the summary response
         setMarkdownText(summaryResponse); // making the summary editable
@@ -417,8 +460,14 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       }
     };
 
-    if (state.mode === 'generate') {
+    const cachedSummary = getCachedItem(`quiz_cache_${state.quizSummaryId}_summary`);
+    if (state.mode === 'generate' && !cachedSummary) {
       generateSummary();
+    } else {
+      setSummary(cachedSummary);
+      setOriginalText(cachedSummary); // setting the original text to the summary response
+      setMarkdownText(cachedSummary); // making the summary editable
+      setIsLoading(false);
     }
   }, [state, isDeveloping]);
 
@@ -487,7 +536,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     }
   }, [isLoading]);
 
-  if (isLoading || state?.mode === 'generate') {
+  if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[50vh] text-white space-y-4">
         <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
