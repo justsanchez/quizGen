@@ -139,9 +139,9 @@ export default function QuizSection({ response }) {
       </div>
 
       <h2 className="quizPage-title text-gray-300">Generated Quiz:</h2>
+      {/* might delete this */}
 
       {processedQuestions.map((q, questionIndex) => {
-        // ! this is not scalable, can you just get the correct answer index from the q object?
         const correctAnswerIndex = q.correct;
         const isCorrect = correctlyAnswered[questionIndex];
 

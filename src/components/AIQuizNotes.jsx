@@ -19,14 +19,15 @@ export default function AIQuizNotes() {
   // ! holy this is sick
   const { state } = useLocation();
   const [response, setResponse] = useState(null);
+  const [title, setTitle] = useState("");
   const [summary, setSummary] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("quiz");
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const [originalText, setOriginalText] = useState(); 
-  const [markdownText, setMarkdownText] = useState(); 
+  const [originalText, setOriginalText] = useState();
+  const [markdownText, setMarkdownText] = useState();
 
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
@@ -47,30 +48,40 @@ export default function AIQuizNotes() {
       expiry: now + ttl, // 1 hour by default
     };
     localStorage.setItem(key, JSON.stringify(item));
-  }
+  }  
 
   function getCachedItem(key) {
     // ! to test caching, use localStorage.clear() in the console
     const itemStr = localStorage.getItem(key);
     if (!itemStr) return null;
-  
+
     const item = JSON.parse(itemStr);
     if (Date.now() > item.expiry) {
       localStorage.removeItem(key);
       return null;
     }
-  
+
     return item.value;
   }
   // ! something to add, if the user refreshes the page in the middle of generating the quiz and summary, and only the summary is generated, it will not properly save the quiz.
   // fix: might need to add logic to the isLoading state to check if the quiz is generated and the summary is generated to safely save both the quiz and summary.
 
+
+  // TODO: FIX ME -> A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+  /*
+  I see the issue now. The error is happening because there's a race condition in how the async operations are handled in the useEffect hooks. Here are the problems:
+
+  There are two separate useEffect hooks that both make async API calls (generateQuiz and generateSummary).
+  These effects are triggered by the same dependencies (state and isDeveloping).
+  The component might unmount before the async operations complete, causing the message channel to close prematurely.
+
+  */
   useEffect(() => {
     const generateQuiz = async () => {
       console.log("Generating content...");
       console.log(state);
       console.log(state.transcript);
-      
+
       if (!state?.transcript) return;
 
       try {
@@ -104,6 +115,7 @@ export default function AIQuizNotes() {
         } else {
           // Use placeholder data for development
           quizResponse = {
+            title: "Saved quiz / summary from development",
             quiz: [
               {
                 "question": "What does EBS stand for in AWS?",
@@ -279,7 +291,7 @@ export default function AIQuizNotes() {
             "OpenAI client is not available. Demo data is being used.",
             {
               position: "top-center",
-              autoClose: 2500, 
+              autoClose: 2500,
               hideProgressBar: false,
               closeOnClick: true,
               pauseOnHover: true,
@@ -289,19 +301,26 @@ export default function AIQuizNotes() {
         }
 
         setResponse(quizResponse.quiz.map(shuffleQuestionOptions));
+        setTitle(quizResponse.title);
+
         console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.quiz', quizResponse.quiz);
+        console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.title: ', quizResponse.title);
       } catch (error) {
         console.error("Generation error:", error);
       } finally {
         setIsLoading(false);
       }
     };
-    
+
     const cachedQuiz = getCachedItem(`quiz_cache_${state.quizSummaryId}_quiz`);
     if (state.mode === 'generate' && !cachedQuiz) {
       generateQuiz();
-    } else {
+    } else if (state.mode === 'generate' && cachedQuiz) {
       setResponse(cachedQuiz.quiz.map(shuffleQuestionOptions));
+      setTitle(cachedQuiz.title);
+      console.log('NEED TO KNOW HOW THIS WORKS -> cachedQuiz', cachedQuiz);
+      console.log('NEED TO KNOW HOW THIS WORKS -> cachedQuiz.quiz', cachedQuiz.quiz);
+      console.log('NEED TO KNOW HOW THIS WORKS -> cachedQuiz.title', cachedQuiz.title);
       setIsLoading(false);
     }
   }, [state, isDeveloping]);
@@ -311,7 +330,7 @@ export default function AIQuizNotes() {
       console.log("Generating content...");
       console.log(state);
       console.log(state.transcript);
-      
+
       if (!state?.transcript) return;
 
       try {
@@ -437,7 +456,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
             "OpenAI client is not available. Demo data is being used.",
             {
               position: "top-center",
-              autoClose: 2500, 
+              autoClose: 2500,
               hideProgressBar: false,
               closeOnClick: true,
               pauseOnHover: true,
@@ -475,7 +494,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     const loadData = async () => {
       console.log("Loading data...");
       console.log(state);
-      
+
       if (!state?.quizFetch || !state?.summaryFetch) return;
 
       try {
@@ -494,6 +513,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         setSummary(summaryLoad);
         setOriginalText(summaryLoad); // setting the original text to the summary response
         setMarkdownText(summaryLoad); // making the summary editable
+        setTitle(quizLoad.title);
 
       } catch (error) {
         console.error("Loading error:", error);
@@ -520,15 +540,15 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     if (isLoading) {
       startTimeRef.current = Date.now();
       console.log('start load cache | just checking how long it takes to load responses');
-  
+
       const timer = setTimeout(() => {
         setShowTimeoutMessage(true);
       }, 20000); // 20 seconds
-  
+
       return () => clearTimeout(timer);
     } else {
       setShowTimeoutMessage(false);
-  
+
       if (startTimeRef.current) {
         const duration = (Date.now() - startTimeRef.current) / 1000;
         console.log('cache load ok executed in', duration.toFixed(2), 'seconds');
@@ -543,7 +563,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         <p>Generating your quiz...</p>
         {showTimeoutMessage && (
           <p className="text-blue-300 text-sm mt-4 max-w-md text-center">
-            Thank you for your patience! This is taking longer than usual. We're still working on creating the best quiz for you.
+            Thank you for your patience! We're still working on creating the best quiz for you.
           </p>
         )}
       </div>
@@ -551,6 +571,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
   }
 
   return (
+    <>
+    <p className="text-gray-200 text-xl font-bold text-center">{title}</p>
     <div className="content-container">
       <div className="shadow-sm z-50">
         <div className="tab-buttons-container">
@@ -562,9 +584,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
               Quiz
             </button>
             <button
-              className={`tab-button ${
-                activeTab === "summary" ? "active" : ""
-              }`}
+              className={`tab-button ${activeTab === "summary" ? "active" : ""
+                }`}
               onClick={() => {
                 setActiveTab("summary");
                 // TODO: need to add a confirm dialog to warn the user that they will lose their changes if they are not saved
@@ -577,69 +598,73 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         </div>
       </div>
 
+
       {activeTab === "quiz" ? (
         <div className="tab-content">
           <QuizSection response={response} />
         </div>
       ) : (
-        
-        <div className="mt-4 max-w-3xl mx-auto p-6 shadow-lg rounded-lg">
-  <div className="flex justify-end mb-2">
-  {checkIfSummaryChanged() && isEditing && (
-    <button
-      onClick={() => setMarkdownText(originalText)}
-      className="text-sm px-3 py-1 bg-blue-500 mr-2 text-white rounded hover:bg-blue-600"
-    >
-      Revert to Original
-    </button>
-  )}
-    <button
-      onClick={() => setIsEditing(!isEditing)}
-      className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
-    >
-      {isEditing ? "Preview Notes" : "Edit Notes"}
-    </button>
-  </div>
 
-  {isEditing ? (
-    <textarea
-      value={markdownText}
-      // TODO: Might NOT WANT to allow more than 1000 characters as will blow up how much can be saved per User 
-      onChange={(e) => setMarkdownText(e.target.value)}
-      className="w-full h-130 p-4 text-sm bg-gray-800 text-gray-100 border border-gray-600 rounded"
-    />
-  ) : (
-    <div className="prose prose-lg prose-blue max-w-full text-gray-200 leading-relaxed space-y-4">
-      <ReactMarkdown
-        remarkPlugins={[remarkGfm]}
-        components={{
-          ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
-          ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
-          table: ({ children }) => (
-            <div className="overflow-x-auto">
-              <table className="min-w-full border border-gray-700">
-                {children}
-              </table>
+          <div className="mt-4 max-w-3xl mx-auto p-6 shadow-lg rounded-lg">
+          <div className="flex justify-end mb-2">
+            {checkIfSummaryChanged() && isEditing && (
+              <button
+                onClick={() => setMarkdownText(originalText)}
+                className="text-sm px-3 py-1 bg-blue-500 mr-2 text-white rounded hover:bg-blue-600"
+              >
+                Revert to Original
+              </button>
+            )}
+            <button
+              onClick={() => setIsEditing(!isEditing)}
+              className="text-sm px-3 py-1 bg-blue-600 text-white rounded hover:bg-blue-700"
+            >
+              {isEditing ? "Preview Notes" : "Edit Notes"}
+            </button>
+          </div>
+          
+          <p className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</p>
+
+          {isEditing ? (
+            <textarea
+              value={markdownText}
+              // TODO: Might NOT WANT to allow more than 1000 characters as will blow up how much can be saved per User 
+              onChange={(e) => setMarkdownText(e.target.value)}
+              className="w-full h-130 p-4 text-sm bg-gray-800 text-gray-100 border border-gray-600 rounded"
+            />
+          ) : (
+            <div className="prose prose-lg prose-blue max-w-full text-gray-200 leading-relaxed space-y-4">
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
+                  table: ({ children }) => (
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-700">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  th: ({ children }) => (
+                    <th className="border border-gray-700 px-4 py-2 bg-gray-800 text-gray-200">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="border border-gray-700 px-4 py-2 text-gray-200">
+                      {children}
+                    </td>
+                  ),
+                }}
+              >
+                {markdownText}
+              </ReactMarkdown>
             </div>
-          ),
-          th: ({ children }) => (
-            <th className="border border-gray-700 px-4 py-2 bg-gray-800 text-gray-200">
-              {children}
-            </th>
-          ),
-          td: ({ children }) => (
-            <td className="border border-gray-700 px-4 py-2 text-gray-200">
-              {children}
-            </td>
-          ),
-        }}
-      >
-        {markdownText}
-      </ReactMarkdown>
-    </div>
-  )}
-</div>
+          )}
+        </div>
       )}
     </div>
+    </>
   );
 }

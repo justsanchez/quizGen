@@ -68,7 +68,8 @@ Only output valid JSON with this format — no extra text:
     Return ONLY a valid JSON object in this structure. Do NOT add any other text, markdown, or commentary.
     
     {
-      "quiz": [
+    "title": {Related to the content of the transcript, (string: max 50 characters)},
+    "quiz": [
         {
           "question": "string",
           "options": ["option", "option", "option", "option"],
@@ -113,7 +114,8 @@ export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) 
     I am studying for the AWS Developer Associate Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
      Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember.
      Provide only the requested information without any additional commentary, follow-up suggestions, or pleasantries.
-      ${transcript}
+    - Include a title:
+     ${transcript}
       `;
     
 

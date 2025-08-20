@@ -74,7 +74,8 @@ export default function QuizDetail() {
                     numQuestions: '',
                     mode: 'load',
                     quizFetch: quizData,
-                    summaryFetch: summaryData
+                    summaryFetch: summaryData,
+                    tags: summaryData.tags
                 },
                 replace: true // Prevents back button issues
             });

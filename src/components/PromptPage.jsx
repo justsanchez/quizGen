@@ -41,8 +41,8 @@ export default function PromptSection() {
       setPromptErrorMessage("Please enter at least 20 words to generate a quiz.");
       errorFlag = true;
     }
-    if (wordCount > 1750) {
-      setPromptErrorMessage("Please keep your input under 1750 words.");
+    if (wordCount > 2000) {
+      setPromptErrorMessage("Please keep your input under 2000 words.");
       errorFlag = true;
     }
 
@@ -208,7 +208,7 @@ export default function PromptSection() {
                 id="specialInstructions"
                 value={specialInstructions}
                 onChange={(e) => setSpecialInstructions(e.target.value)}
-                placeholder="Actually set up a template for the special instructions..."
+                placeholder="Actually set up templates for the special instructions..."
                 rows={6}
                 className="bg-gray-800 focus:outline-none"
               />

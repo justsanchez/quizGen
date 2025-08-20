@@ -34,6 +34,27 @@ export default function Library() {
         }
     }, [userLoggedIn, currentUser]);
 
+
+    // useEffect(() => {
+    
+    //     // fetch localStorage
+    //     // const localStorageLibrary = localStorage.getItem('library');
+    //     // console.log('look at me ', JSON.stringify(localStorageLibrary, null, 2));
+    //     // if (localStorageLibrary) {
+    //     //     setLibrary(JSON.parse(localStorageLibrary));
+    //     // }
+
+    //     // iterate through localStorage and get all the quiz sets
+    //     const localStorageLibrary = localStorage.getItem('library');
+    //     console.log('look at me ', JSON.stringify(localStorageLibrary, null, 2));
+    //     if (localStorageLibrary) {
+    //         setLibrary(JSON.parse(localStorageLibrary));
+    //     }
+        
+    // }, [userLoggedIn, currentUser]);
+
+
+
     return (
         <div className="container mx-auto p-4 text-gray-200">
             <h1>Library</h1>
