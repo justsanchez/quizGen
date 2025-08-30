@@ -5,6 +5,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import ScrollToTop from "./ScrollToTop";
 import "../styles/QuizSection.css";
+import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 
 
 export default function QuizSection({ response }) {
@@ -13,8 +14,10 @@ export default function QuizSection({ response }) {
   const [selectedAnswers, setSelectedAnswers] = useState({});
   const [showExplanations, setShowExplanations] = useState({});
   const [correctlyAnswered, setCorrectlyAnswered] = useState({});
+  const [numberOfCorrectAnswers, setNumberOfCorrectAnswers] = useState(0);
   const [submitted, setSubmitted] = useState(false);
   const [mode, setSelectedMode] = useState("learning");
+  const { isDeveloping } = useDevelopingFlag();
 
   // shuffle the answers on load
   // useEffect(() => {
@@ -63,12 +66,19 @@ export default function QuizSection({ response }) {
     processedQuestions.forEach((_, index) => {
       setShowExplanations((prev) => ({ ...prev, [index]: true }));
     });
+    console.log("processedQuestions", JSON.stringify(processedQuestions, null, 2));
+    console.log("correctlyAnswered", JSON.stringify(correctlyAnswered));
+    console.log("correctlyAnsweredKeys", JSON.stringify(Object.keys(correctlyAnswered)));
+    console.log("correctlyAnsweredObject", Object.keys(correctlyAnswered).length);
+    // setNumberOfCorrectAnswers(correctlyAnswered.length);
+    setNumberOfCorrectAnswers(Object.keys(correctlyAnswered).length);
   };
 
   const resetQuizStates = () => {
     setSelectedAnswers({});
     setShowExplanations({});
     setCorrectlyAnswered({});
+    setNumberOfCorrectAnswers(0);
     setSubmitted(false);
   };
 
@@ -205,8 +215,8 @@ export default function QuizSection({ response }) {
                   </li>
                 );
               })}
-              {/* !only for testing while developing */}
-              {/* <p>Correct Answer: {q.options[q.correct]}</p> */}
+              {/* !only for testing while developing */} 
+             {isDeveloping && <p>Correct Answer: {q.options[q.correct]}</p>}
             </ul>
 
             {(mode === "learning" && isCorrect) ||
@@ -237,6 +247,17 @@ export default function QuizSection({ response }) {
           </button>
         </div>
       )}
+
+      {submitted && ( numberOfCorrectAnswers >= processedQuestions.length * 0.7 ? (
+        <div className="text-green-400">
+          <p>You passed! You scored <strong>{((numberOfCorrectAnswers/processedQuestions.length)*100).toFixed(0)}%</strong> ({numberOfCorrectAnswers} out of {processedQuestions.length})</p>
+        </div>
+      ) : (
+        <div className="text-red-400">
+          <p>Give it another run. You scored <strong>{((numberOfCorrectAnswers/processedQuestions.length)*100).toFixed(0)}%</strong> ({numberOfCorrectAnswers} out of {processedQuestions.length})</p>
+        </div>
+      ))
+      }
       {mode === "testing" && submitted && (
         <div>
           <div className="submit-section">

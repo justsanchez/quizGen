@@ -33,11 +33,18 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
     throw new Error("OpenAI client is not initialized - check your API key");
   }
 
+  console.log('specialInstructions', specialInstructions);
+  console.log('selectedModel', selectedModel);
+  console.log('difficulty', difficulty);
+  console.log('numQuestions', numQuestions);
+
   // Validate and set default model
   const validModels = ['deepseek-chat', 'deepseek-r1'];
   const model = validModels.includes(selectedModel) ? selectedModel : 'deepseek-chat';
 
   try {
+    // ! read below
+    // TODO: add a easy way to remember the quiz question and title and add that to the summary too
     let prompt = `
     You are a JSON quiz generator.
     
@@ -111,10 +118,16 @@ export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel) 
     - AWS Solutions Architect Associate
     */
     let prompt = `
-    I am studying for the AWS Developer Associate Exam and I want you to make good notes that i can follow when watching Stephan Mareaks Videos.
-     Ill give you the transcript and you make the best notes that are easy to follow and also mention use cases and real world applications and remember.
-     Provide only the requested information without any additional commentary, follow-up suggestions, or pleasantries.
-    - Include a title:
+    I am studying for the AWS Developer Associate Exam and I want you to make good notes that I can follow when watching Stephan Mareak's videos.
+
+    I’ll give you the transcript and you will produce the best notes that are:
+    - Easy to follow
+    - Include use cases and real-world applications
+    - Provide only the requested information without additional commentary, follow-ups, or pleasantries
+    - Include a clear title
+    - Use bullet points and headings for structure
+    - Use tables when comparisons, feature breakdowns, or pros/cons lists are useful (but do not force a table if it doesn’t make sense)
+
      ${transcript}
       `;
     

@@ -3,7 +3,11 @@ import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
 
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
+// Enables GitHub Flavored Markdown (GFM) support like tables, task lists, and strikethrough
 import remarkGfm from "remark-gfm";
+// Allows ReactMarkdown to render raw HTML elements such as <br>, <b>, <i>, etc.
+// Install via: npm install rehype-raw
+import rehypeRaw from "rehype-raw";
 import QuizSection from "./QuizSection";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -82,6 +86,7 @@ export default function AIQuizNotes() {
       console.log(state);
       console.log(state.transcript);
 
+      // pulling state from assigned from PromptPage.jsx, lines 71-81
       if (!state?.transcript) return;
 
       try {
@@ -91,6 +96,7 @@ export default function AIQuizNotes() {
           // checking if OpenAI client is available
           const quizRaw = await invokeDeepSeekQuizGenerator(
             state.transcript,
+            state.specialInstructions,
             state.model,
             state.difficulty,
             state.numQuestions
@@ -636,6 +642,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
             <div className="prose prose-lg prose-blue max-w-full text-gray-200 leading-relaxed space-y-4">
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
+                rehypePlugins={[rehypeRaw]} // ⬅️ This enables rendering of raw HTML like <br>
+                skipHtml={false} // ⬅️ This tells ReactMarkdown NOT to skip raw HTML
                 components={{
                   ul: ({ children }) => <ul className="list-disc pl-5 space-y-2">{children}</ul>,
                   ol: ({ children }) => <ol className="list-decimal pl-5 space-y-2">{children}</ol>,
