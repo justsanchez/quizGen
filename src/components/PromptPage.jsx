@@ -7,8 +7,8 @@ import { v4 as uuidv4 } from 'uuid';
 export default function PromptSection() {
   const [prompt, setPrompt] = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");
-  const [difficulty, setDifficulty] = useState("medium");
-  const [numQuestions, setNumQuestions] = useState(10);
+  const [difficulty, setDifficulty] = useState("exam level");
+  const [numQuestions, setNumQuestions] = useState("auto");
   const [promptErrorMessage, setPromptErrorMessage] = useState("");
   const [specialInstructionsErrorMessage, setSpecialInstructionsErrorMessage] = useState("");
   const [selectedModel, setSelectedModel] = useState("deepseek-chat");
@@ -37,18 +37,19 @@ export default function PromptSection() {
     const wordCount = prompt.trim().split(/\s+/).length;
     let errorFlag = false;
 
-    if (wordCount < 20) {
-      setPromptErrorMessage("Please enter at least 20 words to generate a quiz.");
+    if (wordCount < 10) {
+      setPromptErrorMessage("Please enter at least 10 words to generate a quiz.");
       errorFlag = true;
     }
+    // ! this is for the main prompt
     if (wordCount > 2000) {
       setPromptErrorMessage("Please keep your input under 2000 words.");
       errorFlag = true;
     }
 
     const specialInstructionsCount = specialInstructions.trim().split(/\s+/).length;
-    if (specialInstructions && specialInstructionsCount < 20) {
-      setSpecialInstructionsErrorMessage("Please enter at least 20 words to generate a quiz.");
+    if (specialInstructions && specialInstructionsCount < 10) {
+      setSpecialInstructionsErrorMessage("Please enter at least 10 words to generate a quiz.");
       errorFlag = true;
     }
 
@@ -120,6 +121,8 @@ export default function PromptSection() {
               className="w-full border border-gray-600 bg-gray-800 text-gray-400 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="auto">Auto</option>
+              {/* ! this is for the number of questions */}
+              {/* pick a random number from [5, 10, ..., 40] */}
               {[...Array(8)].map((_, i) => {
                 const val = (i + 1) * 5;
                 return (

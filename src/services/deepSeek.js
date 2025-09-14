@@ -56,7 +56,7 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
     """${transcript}"""
     
     Instructions:
-    1. Generate exactly ${numQuestions} multiple-choice questions based only on the content of the transcript.
+    1. Generate exactly ${numQuestions} (if auto, decide the amount of questions based on the transcript) multiple-choice questions based only on the content of the transcript.
     2. For each question:
       - Write a clear question.
       - Choose the correct answer first.
