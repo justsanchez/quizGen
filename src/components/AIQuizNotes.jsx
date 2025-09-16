@@ -1,5 +1,9 @@
 import React, { useState, useEffect, useRef } from "react";
 import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
+import { useAuth } from "../contexts/AuthContext";
+
+import { supabase } from "../supabase/client";
+import SaveQuizModal from "./SaveQuizModal";
 
 import { useLocation } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
@@ -36,7 +40,13 @@ export default function AIQuizNotes() {
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
 
-
+// ! setting up saving quiz and summary to a folder
+const [showSaveModal, setShowSaveModal] = useState(false);
+const [loadedQuizSetData, setLoadedQuizSetData] = useState(null);
+const [responseToSaveInBackend, setResponseToSaveInBackend] = useState(null);
+const [currentQuizSetExists, setCurrentQuizSetExists] = useState(false);
+const [fetchingQuizSetLoading, setFetchingQuizSetLoading] = useState(true);
+const { userLoggedIn, currentUser } = useAuth();
 
   // ! function to check if the originalText (summary) has changed
   function checkIfSummaryChanged() {
@@ -306,6 +316,7 @@ export default function AIQuizNotes() {
           );
         }
 
+        setResponseToSaveInBackend(quizResponse);
         setResponse(quizResponse.quiz.map(shuffleQuestionOptions));
         setTitle(quizResponse.title);
 
@@ -322,6 +333,8 @@ export default function AIQuizNotes() {
     if (state.mode === 'generate' && !cachedQuiz) {
       generateQuiz();
     } else if (state.mode === 'generate' && cachedQuiz) {
+      // ! i dont think i need the setResponseToSaveInBackend
+      setResponseToSaveInBackend(cachedQuiz);
       setResponse(cachedQuiz.quiz.map(shuffleQuestionOptions));
       setTitle(cachedQuiz.title);
       console.log('NEED TO KNOW HOW THIS WORKS -> cachedQuiz', cachedQuiz);
@@ -486,6 +499,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     };
 
     const cachedSummary = getCachedItem(`quiz_cache_${state.quizSummaryId}_summary`);
+
     if (state.mode === 'generate' && !cachedSummary) {
       generateSummary();
     } else {
@@ -515,6 +529,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         // TOOD: need to handle error requests in here maybe or in the quizDetail page
 
 
+        setResponseToSaveInBackend(quizLoad);
         setResponse(quizLoad.quiz.map(shuffleQuestionOptions));
         setSummary(summaryLoad);
         setOriginalText(summaryLoad); // setting the original text to the summary response
@@ -532,6 +547,30 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       console.log('INSIDE loadData | state', JSON.stringify(state, null, 2));
       loadData();
     }
+  }, [state]);
+
+
+  useEffect(() => {
+    const fetchQuizSets = async () => {
+    try { 
+        // First get the user folder
+        const { data: quizSets, error: quizSetsError } = await supabase
+        .from('quiz_sets')
+        .select('*')
+        .eq('quiz_summary_id', state.quizSummaryId);
+
+        if (quizSets && quizSets.length > 0) {
+          setCurrentQuizSetExists(true);
+        }
+        setFetchingQuizSetLoading(false);
+        if (quizSetsError) {
+          console.error('Error fetching quiz sets:', quizSetsError);
+        }
+      } catch (error) {
+        console.error('Error fetching quiz sets:', error);
+      }
+    }
+    fetchQuizSets();
   }, [state]);
 
   if (!state?.transcript && !state?.summaryFetch && !state?.quizFetch) {
@@ -576,9 +615,72 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     );
   }
 
+  const handleSaveClick = async () => {
+    // Make sure we have the latest data
+    if (response && summary && !currentQuizSetExists) {
+      // setFetchingQuizSetLoading(true);
+      setShowSaveModal(true);
+    }
+  };
+
   return (
     <>
-    <p className="text-gray-200 text-xl font-bold text-center">{title}</p>
+  <div className="flex items-center justify-center gap-3 mb-6">
+  <p className="text-gray-200 text-xl font-bold text-center">{title}</p>
+  
+  {/* Save Button next to title */}
+  {state.mode === 'generate' && (
+    <button
+      onClick={handleSaveClick}
+      disabled={fetchingQuizSetLoading || (!response.length || !summary)}
+      className={`flex items-center p-2 rounded-full transition-all duration-200 group ${
+        currentQuizSetExists === true 
+        ? "text-green-500" 
+        : fetchingQuizSetLoading
+            ? "text-gray-500 cursor-wait"
+            : "text-gray-400 hover:text-gray-300 cursor-pointer"
+      }`}
+    >
+      {fetchingQuizSetLoading ? (
+        <svg className="animate-spin h-5 w-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      ) : currentQuizSetExists === true ? (
+        <svg className="h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+          <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+        </svg>
+      ) : (
+        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+        </svg>
+      )}
+      
+      {/* Text that appears on hover */}
+      <span className="ml-2 transition-opacity duration-200 text-sm">
+        {currentQuizSetExists === true ? "Study Set Saved" : "Save Study Set"}
+      </span>
+    </button>
+  )}
+</div>
+
+
+  <SaveQuizModal
+    isOpen={showSaveModal}
+    onClose={() => setShowSaveModal(false)}
+    quizSummaryId={state.quizSummaryId}
+    quizSummaryTitle={title}
+    quizData={responseToSaveInBackend}
+    summaryData={summary}
+    onSaveComplete={(quizSetId) => {
+      console.log("Quiz set saved with ID:", quizSetId);
+      toast.success("Quiz set saved successfully!");
+      setQuizSetSaved(true);
+      setFetchingQuizSetLoading(false);
+      setShowSaveModal(false);
+    }}
+  />
+
     <div className="content-container">
       <div className="shadow-sm z-50">
         <div className="tab-buttons-container">
@@ -603,6 +705,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           </div>
         </div>
       </div>
+
+
 
 
       {activeTab === "quiz" ? (
