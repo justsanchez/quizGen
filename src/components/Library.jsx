@@ -244,14 +244,14 @@ export default function Library() {
                     <p className="text-gray-400">No folders yet. Create your first folder to get started!</p>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4" >
+                <div className="" >
                     {foldersData.map((folder) => {
                     const folderQuizSets = getQuizSetsInFolder(folder.id);
                     return (
                         <div 
                             key={folder.id} 
                             onClick={() => !editingFolder && handleFolderClick(folder)}
-                            className="folder-modal flex flex-col justify-between p-4 border border-gray-600 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors group relative"                        >
+                            className="folder-modal flex flex-col justify-between p-3 mt-3 mb-3 border border-gray-600 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors group relative"                        >
                             {/* Inline Edit Modal */}
                             {editingFolder && (
                                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -321,7 +321,7 @@ export default function Library() {
 
                                         {/* Dropdown menu */}
                                         {menuOpen === folder.id && (
-                                            <div className="absolute left-0 bottom-5 mt-1 w-32 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-20"
+                                            <div className="absolute right-5 bottom-8 mt-1 w-32 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-20"
                                             onClick={(e) => e.stopPropagation()}
                                             >
 
@@ -356,8 +356,11 @@ export default function Library() {
                                     </div>
                                 )}
                             </div>
-                            <p className="text-sm text-gray-400 mt-auto">
+                            <p className="flex justify-between text-sm text-gray-400 mt-auto">
                                 {folderQuizSets.length} quiz set{folderQuizSets.length !== 1 ? 's' : ''}
+                                <p className="font-semibold text-s whitespace-normal">
+                                        {new Date(folder.created_at).toLocaleDateString()}
+                                </p>
                             </p>
                         </div>
                     );

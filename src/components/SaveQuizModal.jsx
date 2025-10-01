@@ -1,6 +1,8 @@
 import React, { useState } from "react";
 import { supabase } from "../supabase/client";
 import { useAuth } from "../contexts/AuthContext";
+import { toast } from 'react-toastify';
+
 
 const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizData, summaryData, onSaveComplete }) => {
   const { userLoggedIn, currentUser } = useAuth();
@@ -56,13 +58,19 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
   };
 
   const handleSaveQuiz = async () => {
-    if (!quizSetTitle.trim()) {
-      alert("Please enter a title for your quiz set");
+    
+    if (!selectedFolderId && !createNewFolder) {
+      toast.error("Please select a folder or create a new folder");
+      return;
+    }
+    
+    if (createNewFolder && !newFolderName.trim()) {
+      toast.error("To create a new folder, please enter a folder name");
       return;
     }
 
-    if (createNewFolder && !newFolderName.trim()) {
-      alert("Please enter a folder name");
+    if (!quizSetTitle.trim()) {
+      toast.error("Please enter a title for your quiz set");
       return;
     }
 
@@ -122,7 +130,7 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
 
     } catch (error) {
       console.error('Error saving quiz set:', error);
-      alert("Failed to save quiz set. Please try again.");
+      // alert("Failed to save quiz set. Please try again.");
     } finally {
       setIsLoading(false);
     }

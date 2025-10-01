@@ -675,9 +675,9 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     onSaveComplete={(quizSetId) => {
       console.log("Quiz set saved with ID:", quizSetId);
       toast.success("Quiz set saved successfully!");
-      setQuizSetSaved(true);
       setFetchingQuizSetLoading(false);
       setShowSaveModal(false);
+      setCurrentQuizSetExists(true);
     }}
   />
 
