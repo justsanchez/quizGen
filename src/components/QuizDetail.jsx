@@ -24,26 +24,33 @@ export default function QuizDetail() {
         const fetchData = async () => {
             try {
                 // Check cache first
+                const cachedQuizSumId = localStorage.getItem(getCacheKey(id, 'quizSumId'));
                 const cachedQuiz = localStorage.getItem(getCacheKey(id, 'quiz'));
                 const cachedSummary = localStorage.getItem(getCacheKey(id, 'summary'));
 
-                if (cachedQuiz && cachedSummary) {
+                if (cachedQuizSumId && cachedQuiz && cachedSummary) {
                     // navigateWithData(JSON.parse(cachedQuiz), JSON.parse(cachedSummary));
                     // return;
                 }
 
                 // Fetch fresh data if no cache
-                const [quizRes, summaryRes] = await Promise.all([
+                const [quizSetData, quizRes, summaryRes] = await Promise.all([
+                    supabase.from('quiz_sets').select('quiz_summary_id, title').eq('id', id),
                     supabase.from('quizzes').select('quiz_data').eq('quiz_set_id', id),
                     supabase.from('summaries').select('summary_content').eq('quiz_set_id', id)
                 ]);
 
                 if (quizRes.error || summaryRes.error) throw new Error('Fetch failed');
 
+                console.log('quizSetData', quizSetData.data[0].quiz_summary_id);
                 console.log('quizRes', quizRes.data[0].quiz_data);
                 console.log('summaryRes', summaryRes.data[0].summary_content);
 
                 // Cache the data
+                localStorage.setItem(
+                    getCacheKey(id, 'quizSumId'),
+                    JSON.stringify(quizSetData.data[0].quiz_summary_id)
+                );
                 localStorage.setItem(
                     getCacheKey(id, 'quiz'),
                     JSON.stringify(quizRes.data[0].quiz_data)
@@ -53,7 +60,7 @@ export default function QuizDetail() {
                     JSON.stringify(summaryRes.data[0].summary_content)
                 );
 
-                navigateWithData(quizRes.data[0].quiz_data, summaryRes.data[0].summary_content);
+                navigateWithData(quizSetData.data[0].title, quizSetData.data[0].quiz_summary_id, quizRes.data[0].quiz_data, summaryRes.data[0].summary_content);
             } catch (error) {
                 console.error('Error:', error);
                 navigate('/error'); // Add your error handling route
@@ -62,7 +69,8 @@ export default function QuizDetail() {
             }
         };
 
-        const navigateWithData = (quizData, summaryData) => {
+        const navigateWithData = (quizSetTitle, quizSumId, quizData, summaryData) => {
+            console.log('quizSumId | Look at me', JSON.stringify(quizSumId));
             console.log('quizData | Look at me', JSON.stringify(quizData));
             console.log('summaryData | Look at me', JSON.stringify(summaryData));
             navigate("/quizNotes", {
@@ -72,6 +80,8 @@ export default function QuizDetail() {
                     model: '',
                     difficulty: '',
                     numQuestions: '',
+                    title: quizSetTitle,
+                    quizSummaryId: quizSumId,
                     mode: 'load',
                     quizFetch: quizData,
                     summaryFetch: summaryData,

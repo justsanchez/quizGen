@@ -37,13 +37,13 @@ export default function PromptSection() {
     const wordCount = prompt.trim().split(/\s+/).length;
     let errorFlag = false;
 
-    if (wordCount < 10) {
-      setPromptErrorMessage("Please enter at least 10 words to generate a quiz.");
+    if (wordCount <= 5) {
+      setPromptErrorMessage("Please enter at least 5 words to generate a quiz.");
       errorFlag = true;
     }
     // ! this is for the main prompt
-    if (wordCount > 2000) {
-      setPromptErrorMessage("Please keep your input under 2000 words.");
+    if (wordCount > 4000) {
+      setPromptErrorMessage("Please keep your input under 4000 words.");
       errorFlag = true;
     }
 

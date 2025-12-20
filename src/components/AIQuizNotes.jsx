@@ -37,6 +37,8 @@ export default function AIQuizNotes() {
   const [originalText, setOriginalText] = useState();
   const [markdownText, setMarkdownText] = useState();
 
+  const [quizSetTitle, setQuizSetTitle] = useState('');
+
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
 
@@ -318,7 +320,19 @@ const { userLoggedIn, currentUser } = useAuth();
 
         setResponseToSaveInBackend(quizResponse);
         setResponse(quizResponse.quiz.map(shuffleQuestionOptions));
-        setTitle(quizResponse.title);
+        
+        // if a title is already set on the quiz set, use it, otherwise use the title from the quiz response
+        console.log('NEED TO KNOW HOW THIS WORKS -> quizSetTitle: ', quizSetTitle);
+        console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.title: ', quizResponse.title);
+        
+        // setting the title of the quiz set if based on the quiz response title
+        if (quizSetTitle) {
+          setTitle(quizSetTitle);
+        } else {
+          setTitle(quizResponse.title);
+        }
+
+
 
         console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.quiz', quizResponse.quiz);
         console.log('NEED TO KNOW HOW THIS WORKS -> quizResponse.title: ', quizResponse.title);
@@ -520,8 +534,11 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       try {
         let quizLoad;
         let summaryLoad;
+        let title;
 
         quizLoad = state.quizFetch
+        title = state.title
+
         console.log('INSIDE loadData | quizLoad', JSON.stringify(quizLoad, null, 2));
         summaryLoad = state.summaryFetch
         console.log('INSIDE loadData | summaryLoad', JSON.stringify(summaryLoad, null, 2));
@@ -534,7 +551,14 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         setSummary(summaryLoad);
         setOriginalText(summaryLoad); // setting the original text to the summary response
         setMarkdownText(summaryLoad); // making the summary editable
-        setTitle(quizLoad.title);
+
+        // ! setting the title of the quiz set if it exists
+        if (title) {
+          setTitle(title);
+        } else {
+          // todo: clean up the setTitle set state across the file
+          setTitle(quizLoad.title);
+        }
 
       } catch (error) {
         console.error("Loading error:", error);
@@ -553,7 +577,10 @@ These notes should help you follow along with Stephan Mareek's video and prepare
   useEffect(() => {
     const fetchQuizSets = async () => {
     try { 
-        // First get the user folder
+
+      console.log('INSIDE fetchQuizSets | state', JSON.stringify(state, null, 2));
+      console.log('INSIDE fetchQuizSets | state.quizSummaryId', state.quizSummaryId);
+        // On quiz generation, we need to get the user folder
         const { data: quizSets, error: quizSetsError } = await supabase
         .from('quiz_sets')
         .select('*')
@@ -562,6 +589,14 @@ These notes should help you follow along with Stephan Mareek's video and prepare
         if (quizSets && quizSets.length > 0) {
           setCurrentQuizSetExists(true);
         }
+
+        console.log('INSIDE fetchQuizSets | quizSets', JSON.stringify(quizSets, null, 2));
+        // TODO: need to handle error requests in here maybe or in the quizDetail page
+        // if (quizSets && quizSets.length > 0) {
+        //   // setting the title of the quiz set if it exists
+        //   setTitle(quizSets[0].title);
+        // }
+
         setFetchingQuizSetLoading(false);
         if (quizSetsError) {
           console.error('Error fetching quiz sets:', quizSetsError);

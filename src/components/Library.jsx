@@ -13,6 +13,24 @@ export default function Library() {
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
 
+
+    const [allTags, setAllTags] = useState([]);
+    const [tagsToQuizSetMap, setTagsToQuizSetMap] = useState({});
+
+
+    const [editingFolder, setEditingFolder] = useState(null);
+    const [editFolderName, setEditFolderName] = useState("");
+
+    const [selectedTag, setSelectedTag] = useState("");
+    const [tagFilter, setTagFilter] = useState("");
+    const [selectedTitle, setSelectedTitle] = useState("");
+
+    const [menuOpen, setMenuOpen] = useState(null); // Track which menu is open
+
+
+
+    
+
     useEffect(() => {
         const fetchData = async () => {
             if (!userLoggedIn) return;
@@ -57,13 +75,37 @@ export default function Library() {
                 const { data: quizSets, error: quizSetsError } = await supabase
                 .from('quiz_sets')
                 .select('*')
-                .in('folder_id', folderIds);
+                .in('folder_id', folderIds)
+                .order('created_at', { ascending: true });
 
                 if (quizSetsError) throw quizSetsError;
+
+                // Map each quiz set to its tags
+                const tagsToQuizSetMap = {};
+
+                for (const quizSet of quizSets) {
+                if (!quizSet.tags) continue;
+
+                let tagList = [];
+
+                if (Array.isArray(quizSet.tags)) {
+                    tagList = quizSet.tags;
+                } else if (typeof quizSet.tags === 'string') {
+                    tagList = quizSet.tags
+                    .split(',')
+                    .map(tag => tag.trim())
+                    .filter(Boolean);
+                }
+
+                // Store tags associated with this quiz set
+                tagsToQuizSetMap[quizSet.folder_id] = tagList;
+                }
+                  
 
                 // Optional: If you want to keep the original separate states too
                 setFoldersData(folders || []);
                 setQuizSets(quizSets || []);
+                setTagsToQuizSetMap(tagsToQuizSetMap);
             } catch (error) {
                 console.error('Error fetching data:', error);
             } finally {
@@ -74,13 +116,69 @@ export default function Library() {
         fetchData();
     }, [userLoggedIn, currentUser]);
 
+    
+    const handleTagSelect = (event) => {
+      const selected = event.target.value;
+      setSelectedTag(selected);
+      setTagFilter(selected); // triggers filtering logic
+    };
+
     const handleFolderClick = (folder) => {
         setSelectedFolder(folder);
         setShowModal(true);
         setMenuOpen(null);
     };
 
-    const [menuOpen, setMenuOpen] = useState(null); // Track which menu is open
+
+    // =============== Getters ===============
+    // ! this function is used to get the quiz sets in a specific folder
+    // TODO: can we make this more efficient? and also can we can just add this logic at the end of the fetchData function?
+    const getQuizSetsInFolder = (folderId) => {
+        return quizSets.filter(quizSet => quizSet.folder_id === folderId);
+    };
+
+    const getFilteredQuizSetsInFolder = (folderId) => {
+        const quizSets = getQuizSetsInFolder(folderId);
+      
+        // if no filters applied, show all quiz sets
+        if (
+          (!selectedTag || selectedTag.trim() === "") &&
+          (!selectedTitle || selectedTitle.trim() === "")
+        ) {
+          return quizSets;
+        }
+      
+        return quizSets.filter((quizSet) => {
+          let tagMatch = true;
+          let titleMatch = true;
+      
+          // TAG FILTER
+          if (selectedTag && selectedTag.trim() !== "") {
+            if (Array.isArray(quizSet.tags)) {
+              tagMatch = quizSet.tags.some((tag) =>
+                tag.toLowerCase().includes(selectedTag.toLowerCase())
+              );
+            } else if (typeof quizSet.tags === "string") {
+              tagMatch = quizSet.tags
+                .split(",")
+                .map((t) => t.trim().toLowerCase())
+                .includes(selectedTag.toLowerCase());
+            } else {
+              tagMatch = false;
+            }
+          }
+      
+          // TITLE FILTER
+          if (selectedTitle && selectedTitle.trim() !== "") {
+            titleMatch = quizSet.title
+              ?.toLowerCase()
+              .includes(selectedTitle.toLowerCase());
+          }
+      
+          return tagMatch && titleMatch;
+        });
+      };
+
 
     // Function to handle folder deletion
     const handleDeleteFolder = async (folder) => {
@@ -111,8 +209,6 @@ export default function Library() {
         //     alert('Failed to delete folder');
         // }
     };
-    const [editingFolder, setEditingFolder] = useState(null);
-    const [editFolderName, setEditFolderName] = useState("");
 
     // Scroll lock when modal is open
     useEffect(() => {
@@ -207,16 +303,7 @@ export default function Library() {
             document.removeEventListener('mousedown', handleClickOutside);
         };
     }, [editingFolder, menuOpen, showModal]);
-    
 
-
-
-
-    // ! this function is used to get the quiz sets in a specific folder
-    // TODO: can we make this more efficient? and also can we can just add this logic at the end of the fetchData function?
-    const getQuizSetsInFolder = (folderId) => {
-        return quizSets.filter(quizSet => quizSet.folder_id === folderId);
-    };
 
     if (loading) {
         return (
@@ -224,7 +311,7 @@ export default function Library() {
                 <div className="animate-pulse">
                     <div className="h-8 w-48 bg-gray-500 rounded mb-4"></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {/* TODO: make this more dynamic in the future */}
+                        {/* TODO: LOADING SKELETON - make this more dynamic in the future */}
                         {[1, 2, 3].map(i => (
                             <div key={i} className="p-4 border rounded-lg bg-gray-700 h-32"></div>
                         ))}
@@ -235,7 +322,7 @@ export default function Library() {
     }
 
     return (
-        <div className="container mx-auto p-4 text-gray-200">
+        <div className="p-4 text-gray-200 max-w-145" >
             <h1 className="text-2xl font-bold mb-6">Your Library</h1>
             
             {foldersData.length === 0 ? (
@@ -248,10 +335,10 @@ export default function Library() {
                     {foldersData.map((folder) => {
                     const folderQuizSets = getQuizSetsInFolder(folder.id);
                     return (
-                        <div 
+                        <div
                             key={folder.id} 
                             onClick={() => !editingFolder && handleFolderClick(folder)}
-                            className="folder-modal flex flex-col justify-between p-3 mt-3 mb-3 border border-gray-600 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors group relative"                        >
+                            className="folder-modal flex flex-col justify-between p-3 mt-3 mb-3 border border-gray-600 rounded-lg bg-gray-800 hover:bg-gray-700 transition-colors group relative">
                             {/* Inline Edit Modal */}
                             {editingFolder && (
                                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
@@ -271,6 +358,7 @@ export default function Library() {
                                             className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                             autoFocus
                                             placeholder="Enter folder name"
+                                            autoComplete="off"  // 👈 disables browser autofill/autocomplete suggestions
                                         />
                                         
                                         <div className="flex justify-end gap-3">
@@ -338,7 +426,7 @@ export default function Library() {
                                                     </svg>
                                                     Edit
                                                 </button>
-                                                <button
+                                                {/* <button
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         handleDeleteFolder(folder);
@@ -350,18 +438,18 @@ export default function Library() {
                                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                                     </svg>
                                                     Delete
-                                                </button>
+                                                </button> */}
                                             </div>
                                         )}
                                     </div>
                                 )}
                             </div>
-                            <p className="flex justify-between text-sm text-gray-400 mt-auto">
+                            <div className="flex justify-between text-sm text-gray-400 mt-auto">
                                 {folderQuizSets.length} quiz set{folderQuizSets.length !== 1 ? 's' : ''}
                                 <p className="font-semibold text-s whitespace-normal">
                                         {new Date(folder.created_at).toLocaleDateString()}
                                 </p>
-                            </p>
+                            </div>
                         </div>
                     );
                 })}
@@ -370,8 +458,8 @@ export default function Library() {
         )}
             {/* Folder Modal */}
             {showModal && selectedFolder && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-md shadow-2xl flex items-center justify-center p-4 z-50">
-                    <div className="show-folder-modal bg-gray-800 rounded-lg p-6 w-full max-w-2xl max-h-80vh overflow-hidden">
+                <div className="fixed inset-0 pr- bg-black/40 backdrop-blur-md shadow-2xl flex items-center justify-center p-4 z-50">
+                    <div className="show-folder-modal bg-gray-800 rounded-lg p-6 w-full max-w-3xl max-h-80vh overflow-hidden">
                         <div className="flex items-center justify-between mb-4">
                             <div className="flex items-center">
                                 <div className="text-2xl mr-3">📁</div>
@@ -391,14 +479,63 @@ export default function Library() {
                                     <p>No quiz sets in this folder yet.</p>
                                 </div>
                             ) : (
-                                <div className="grid gap-2 max-h-96 overflow-y-auto">
-                                    {getQuizSetsInFolder(selectedFolder.id).map((quizSet) => (
-                                        <Link
-                                            key={quizSet.id}
-                                            to={`/quiz/${quizSet.id}`}
-                                            className="block p-3 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+                                <div className="grid gap-2 max-h-120 overflow-y-auto scrollbar-hide pr-2">
+                                    {/* <pre className="text-xs text-gray-400 ml-4">
+                                        {JSON.stringify(tagsToQuizSetMap[selectedFolder.id], null, 2)}
+                                        {JSON.stringify(selectedFolder, null, 2)}
+                                    </pre> */}
+                                    {/* Filter by tags */}
+                                    {tagsToQuizSetMap[selectedFolder.id] && (
+                                        <div className="flex items-center gap-2 mt-3 mb-1">
+                                            <label htmlFor="tagFilter" className="text-sm text-gray-300 whitespace-nowrap">
+                                            Filter by tag:
+                                            </label>
+                                            <select
+                                            id="tagFilter"
+                                            value={selectedTag}
+                                            onChange={handleTagSelect}
+                                            className="p-2 bg-gray-800 text-gray-200 border border-gray-600 rounded-lg focus:outline-none"
+                                            >
+                                            <option value="">All tags</option>
+                                            {tagsToQuizSetMap[selectedFolder.id].map((tag, index) => (
+                                                <option key={index} value={tag}>
+                                                {tag}
+                                                </option>
+                                            ))}
+                                            </select>
+                                            {selectedTag && (
+                                            <span className="text-gray-400 hover:text-white text-xl cursor-pointer invert" onClick={() => setSelectedTag("")}>✖️</span>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Filter by title */}
+                                    <div className="mt-3 mb-2">
+                                        <label htmlFor="titleFilter" className="text-sm text-gray-300 whitespace-nowrap">
+                                        Search by title:
+                                        </label>
+                                    <input
+                                    id="titleFilter"
+                                    value={selectedTitle}
+                                    placeholder="Enter title here..."
+                                    onChange={(e) => setSelectedTitle(e.target.value)}
+                                    className="p-2 mb-3 w-full bg-gray-700 text-gray-200 border border-gray-600 rounded-md focus:outline-none"
+                                    autoComplete="off"  // 👈 disables browser autofill/autocomplete suggestions
+                                    />
+                                    </div>
+
+                                    {/* getFilteredQuizSetsInFolder */}
+                                    {/* getQuizSetsInFolder */}
+                                    {getFilteredQuizSetsInFolder(selectedFolder.id).map((quizSet) => (
+                                            <Link
+                                                key={quizSet.id}
+                                                to={`/quiz/${quizSet.id}`}
+                                                className="block p-3 border border-gray-600 rounded-lg hover:bg-gray-500"
                                             onClick={() => setShowModal(false)}
                                         >
+                                            {/* <pre className="text-xs text-gray-400 ml-4">
+                                        {JSON.stringify(quizSet, null, 2)}
+                                    </pre> */}
                                             <div className="flex items-center justify-between">
                                                 <h4 className="font-medium truncate">
                                                     {quizSet.title}
@@ -407,25 +544,33 @@ export default function Library() {
                                                     {new Date(quizSet.created_at).toLocaleDateString()}
                                                 </span>
                                             </div>
-                                            {/* {quizSet.tags && quizSet.tags.length > 0 && (
+                                            {quizSet.tags && (
                                                 <div className="flex flex-wrap gap-1 mt-2">
-                                                    {quizSet.tags.slice(0, 3).map((tag, index) => (
-                                                        <span 
-                                                            key={index}
-                                                            className="text-xs bg-blue-600 px-2 py-1 rounded-full"
+                                                    {(Array.isArray(quizSet.tags)
+                                                    ? quizSet.tags
+                                                    : typeof quizSet.tags === "string"
+                                                        ? quizSet.tags.split(",").map(tag => tag.trim())
+                                                        : []
+                                                    )
+                                                    .slice(0, 3)
+                                                    .map((tag, index) => (
+                                                        <span
+                                                        key={index}
+                                                        className="text-xs bg-blue-600 px-2 py-1 rounded-full"
                                                         >
-                                                            {tag}
+                                                        {tag}
                                                         </span>
                                                     ))}
-                                                    {quizSet.tags.length > 3 && (
-                                                        <span className="text-xs text-gray-400">
-                                                            +{quizSet.tags.length - 3} more
-                                                        </span>
+                                                    {Array.isArray(quizSet.tags) && quizSet.tags.length > 3 && (
+                                                    <span className="text-xs text-gray-400">
+                                                        +{quizSet.tags.length - 3} more
+                                                    </span>
                                                     )}
                                                 </div>
-                                            )} */}
+                                            )}
                                         </Link>
                                     ))}
+
                                 </div>
                             )}
                         </div>
