@@ -9,6 +9,8 @@
  *
  */
 
+// todo: need to add this to a utilities folder
+
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 

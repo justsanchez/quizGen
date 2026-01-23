@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/AIQuizNotes.css"; // todo: out of place, refactor this
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 import { v4 as uuidv4 } from 'uuid';
+import { useAuth } from "../contexts/AuthContext";
 
 export default function PromptSection() {
   const [prompt, setPrompt] = useState("");
@@ -16,6 +17,8 @@ export default function PromptSection() {
   let [showAdvanced, setShowAdvanced] = useState(false);
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
+  const { userLoggedIn, currentUser } = useAuth();
+
 
   const modelOptions = [
     {
@@ -64,6 +67,9 @@ export default function PromptSection() {
     setPromptErrorMessage(""); // Clear message if valid
     setSpecialInstructionsErrorMessage(""); // Clear message if valid
 
+    console.log('currentUser', currentUser);
+    console.log('LOOOK AT MEEEE: currentUser', JSON.stringify(currentUser));
+
     // generate a random id for the quiz
     const quizSummaryId = uuidv4(); // cspell:ignore uuidv4
 
@@ -77,7 +83,8 @@ export default function PromptSection() {
         difficulty: difficulty,
         numQuestions: numQuestions,
         quizSummaryId: quizSummaryId,
-        mode: 'generate'
+        mode: 'generate',
+        userId: currentUser?.uid,
       },
     });
   };

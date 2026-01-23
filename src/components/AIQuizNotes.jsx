@@ -34,21 +34,27 @@ export default function AIQuizNotes() {
 
   const [isEditing, setIsEditing] = useState(false);
 
-  const [originalText, setOriginalText] = useState();
-  const [markdownText, setMarkdownText] = useState();
+  const [originalText, setOriginalText] = useState('');
+  const [markdownText, setMarkdownText] = useState('');
+  
 
   const [quizSetTitle, setQuizSetTitle] = useState('');
 
   // ! this allows us not to exhausted the API calls
   const { isDeveloping } = useDevelopingFlag();
 
-// ! setting up saving quiz and summary to a folder
-const [showSaveModal, setShowSaveModal] = useState(false);
-const [loadedQuizSetData, setLoadedQuizSetData] = useState(null);
-const [responseToSaveInBackend, setResponseToSaveInBackend] = useState(null);
-const [currentQuizSetExists, setCurrentQuizSetExists] = useState(false);
-const [fetchingQuizSetLoading, setFetchingQuizSetLoading] = useState(true);
-const { userLoggedIn, currentUser } = useAuth();
+  // ! setting up saving quiz and summary to a folder
+  const [showSaveModal, setShowSaveModal] = useState(false);
+  const [loadedQuizSetData, setLoadedQuizSetData] = useState(null);
+  const [responseToSaveInBackend, setResponseToSaveInBackend] = useState(null);
+  const [currentQuizSetExists, setCurrentQuizSetExists] = useState(false);
+  const [fetchingQuizSetLoading, setFetchingQuizSetLoading] = useState(true);
+  const { userLoggedIn, currentUser } = useAuth();
+
+
+  // ! setting up the quiz and summary prompt template
+  const [quizPrompt, setQuizPrompt] = useState('')
+  const [summaryPrompt, setSummaryPrompt] = useState('')
 
   // ! function to check if the originalText (summary) has changed
   function checkIfSummaryChanged() {
@@ -111,7 +117,8 @@ const { userLoggedIn, currentUser } = useAuth();
             state.specialInstructions,
             state.model,
             state.difficulty,
-            state.numQuestions
+            state.numQuestions,
+            state.userId
           );
 
           // Clean and parse responses
@@ -370,9 +377,12 @@ const { userLoggedIn, currentUser } = useAuth();
         let summaryResponse;
 
         if (!isDeveloping && openai) {
+          // ! why not pass down the template here within the invokeDeepSeekSummaryGenerator function?
+          // so it knows what the user wants to 
           const summaryRaw = await invokeDeepSeekSummaryGenerator(
             state.transcript,
-            state.model
+            state.model,
+            state.userId
           );
 
           summaryResponse = summaryRaw.replace(/```html|```/g, "").trim();
@@ -612,6 +622,42 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     return <div>No transcript or summary or quiz provided. Please go back and enter one.</div>;
   }
 
+  useEffect(() => {
+    const fetchPromptTemplates = async () => {
+      if (!userLoggedIn || !currentUser?.uid) {
+        setQuizPrompt('');
+        setSummaryPrompt('');
+        return;
+      }
+
+      try {
+        const { data: promptTemplates, error: promptTemplatesError } = await supabase
+          .from('userFolder')
+          .select('quizPrompt, summaryPrompt')
+          .eq('user_id', currentUser.uid)
+          .limit(1);
+
+        if (promptTemplatesError) {
+          console.error('Error fetching prompt templates:', promptTemplatesError);
+          return;
+        }
+
+        if (promptTemplates && promptTemplates.length > 0) {
+          setQuizPrompt(promptTemplates[0].quizPrompt || '');
+          setSummaryPrompt(promptTemplates[0].summaryPrompt || '');
+          console.log('setQuizPrompt gets set properly', promptTemplates[0].quizPrompt);
+          console.log('setSummaryPrompt gets set properly', promptTemplates[0].summaryPrompt);
+        } else {
+          setQuizPrompt('');
+          setSummaryPrompt('');
+        }
+      } catch (error) {
+        console.error('Error fetching prompt templates:', error);
+      }
+    };
+    fetchPromptTemplates();
+  }, [userLoggedIn, currentUser?.uid]);
+
   const [showTimeoutMessage, setShowTimeoutMessage] = useState(false);
 
   const startTimeRef = useRef(null); // Declare once, at the top level
@@ -658,6 +704,7 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     }
   };
 
+
   return (
     <>
   <div className="flex items-center justify-center gap-3 mb-6">
@@ -698,6 +745,9 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     </button>
   )}
 </div>
+
+
+
 
 
   <SaveQuizModal
@@ -769,6 +819,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
           </div>
           
           <p className="text-sm text-gray-500">Last updated: {new Date().toLocaleString()}</p>
+
+
 
           {isEditing ? (
             <textarea

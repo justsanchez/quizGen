@@ -5,6 +5,7 @@ import LandingPage from "./components/LandingPage";
 import ScrollToTop from "./components/ScrollToTop";
 import LearnMore from "./components/LearnMore";
 import Library from "./components/Library";
+import Settings from "./components/Settings";
 
 // Quiz Detail - 
 import QuizDetail from "./components/QuizDetail";
@@ -66,6 +67,7 @@ export default function App() {
           <Route element={<LayoutWithNavbar />}>
             <Route path="/prompt" element={<PromptSection />} />
             <Route path="/quizNotes" element={<AIQuizNotes />} />
+            <Route path="/settings" element={<Settings />} />
             <Route path="/learn-more" element={<LearnMore />} />
             <Route path="/library" element={<Library />} />
             <Route path="/layout" element={<Layout />} />
