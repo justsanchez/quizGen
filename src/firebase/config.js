@@ -6,13 +6,6 @@ import { getAuth } from "firebase/auth";
 
 // ! ✅✅
 
-console.log('import.meta.env.VITE_APIKEY', import.meta.env.VITE_APIKEY);
-console.log('import.meta.env.VITE_AUTHDOMAIN', import.meta.env.VITE_AUTHDOMAIN);
-console.log('import.meta.env.VITE_PROJECTID', import.meta.env.VITE_PROJECTID);
-console.log('import.meta.env.VITE_STORAGEBUCKET', import.meta.env.VITE_STORAGEBUCKET);
-console.log('import.meta.env.VITE_MESSAGINGSENDERID', import.meta.env.VITE_MESSAGINGSENDERID);
-console.log('import.meta.env.VITE_APPID', import.meta.env.VITE_APPID);
-
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_APIKEY,
     authDomain: import.meta.env.VITE_AUTHDOMAIN,
