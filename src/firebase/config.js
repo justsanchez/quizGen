@@ -4,8 +4,6 @@ import { getFirestore } from "firebase/firestore";
 //GetAuth Method is used to Configure our app to use Firebase Authentication
 import { getAuth } from "firebase/auth";
 
-// ! ✅✅
-
 const firebaseConfig = {
     apiKey: import.meta.env.VITE_APIKEY,
     authDomain: import.meta.env.VITE_AUTHDOMAIN,
