@@ -310,7 +310,7 @@ export default function Library() {
             <div className="container mx-auto p-4 text-gray-200">
                 <div className="animate-pulse">
                     <div className="h-8 w-48 bg-gray-500 rounded mb-4"></div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <div className="grid grid-rows-1 md:grid-rows-2 lg:grid-rows-3 gap-4 max-w-135">
                         {/* TODO: LOADING SKELETON - make this more dynamic in the future */}
                         {[1, 2, 3].map(i => (
                             <div key={i} className="p-4 border rounded-lg bg-gray-700 h-32"></div>

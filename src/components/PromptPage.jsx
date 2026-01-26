@@ -226,6 +226,7 @@ export default function PromptSection() {
                 <p className="text-red-500 text-sm">{specialInstructionsErrorMessage}</p>
               )}
             </div>
+
           </div>
 
         )}

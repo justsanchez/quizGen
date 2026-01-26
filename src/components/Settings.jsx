@@ -125,41 +125,32 @@ const Settings = () => {
           <p className="text-gray-300 mb-2">
             No <code>userFolder</code> row found for your account.
           </p>
-          <p className="text-sm text-gray-400">
-            The app expects a row in <code>userFolder</code> with <code>user_id</code> set to your
-            Firebase UID.
-          </p>
         </div>
       )}
 
       {userLoggedIn && !isLoading && userFolderRow && (
         <div className="space-y-4">
-
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <label className="block text-sm font-medium mb-2">
-              Quiz Prompt{" "}
-            </label>
+          <label className="block text-sm font-medium mb-2">
+            Quiz Prompt
+          </label>
             <textarea
               value={quizPrompt}
               onChange={(e) => setQuizPrompt(e.target.value)}
-              rows={15}
+              rows={13}
               placeholder="Enter the prompt used to generate quizzes…"
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white resize-y"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white resize-y focus:outline-none"
             />
-          </div>
 
-          <div className="bg-gray-800 border border-gray-700 rounded-lg p-4">
-            <label className="block text-sm font-medium mb-2">
-              Summary Prompt{" "}
-            </label>
+          <label className="block text-sm font-medium mb-2">
+            Summary Prompt
+          </label>
             <textarea
               value={summaryPrompt}
               onChange={(e) => setSummaryPrompt(e.target.value)}
               rows={15}
               placeholder="Enter the prompt used to generate summaries…"
-              className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white resize-y"
+              className="w-full p-3 bg-gray-700 border border-gray-600 rounded text-white resize-y focus:outline-none"
             />
-          </div>
 
           <div className="flex items-center gap-3">
             <button

@@ -28,7 +28,7 @@ Instructions:
 4. The correct index must reflect the correct answer's current position in the shuffled list.
 5. Include a short explanation for why the answer is correct.
 6. Add a brief explanation.
-7. Include relevant AWS service names if applicable in the explanation.
+7. Include relevant real-world applications if applicable in the explanation.
 
 Only output valid JSON with this format — no extra text:
 
@@ -145,7 +145,19 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
       """${transcript}"""
 
       Instructions:
-      Generate exactly ${numQuestions} (if auto, decide the amount of questions based on the transcript) multiple-choice questions based only on the content of the transcript.
+      1. Generate exactly ${numQuestions} (if auto, decide the amount of questions based on the transcript) multiple-choice questions based only on the content of the transcript.
+
+      2. For each question:
+      - Write a clear question.
+      - Choose the correct answer first.
+      - Create 3 plausible incorrect answers.
+      - Output the 4 options in **any order** (do NOT pre-label them with A/B/C/D).
+      - Track the **index (0–3)** of the correct answer in the 'correct' field.
+      3. Do NOT include answer letters like "A.", "B.", etc. in the 'options' array — return plain strings.
+      4. The correct index must reflect the correct answer's current position in the shuffled list.
+      5. Include a short explanation for why the answer is correct.
+      6. Add a brief explanation.
+      7. Include relevant real-world applications if applicable in the explanation.
 
       ${quizPrompt.trim()}
 

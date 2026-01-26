@@ -68,7 +68,6 @@ export default function App() {
             <Route path="/prompt" element={<PromptSection />} />
             <Route path="/quizNotes" element={<AIQuizNotes />} />
             <Route path="/settings" element={<Settings />} />
-            <Route path="/learn-more" element={<LearnMore />} />
             <Route path="/library" element={<Library />} />
             <Route path="/layout" element={<Layout />} />
             <Route path="/quiz/:id" element={<QuizDetail />} />
@@ -77,11 +76,9 @@ export default function App() {
           {/* Routes without Navbar */}
           <Route element={<LandingPageNavbar />}>
             <Route path="/" element={<LandingPage />} />
-          </Route>
-          {/* if signed in always redirect to /prompt */}
-          <Route element={<LayoutWithNavbar />}>
-            <Route path="/prompt" element={<PromptSection />} />
-          </Route>
+            <Route path="/learn-more" element={<LearnMore />} />
+          </Route>    
+
 
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
