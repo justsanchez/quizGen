@@ -32,14 +32,14 @@ const Sidebar = () => {
   };
 
   const navItems = [
-    { path: '/prompt',        label: 'Prompt',    icon: <FaFeather /> },
+    { path: '/prompt', label: 'Prompt', icon: <FaFeather /> },
     { path: '/library', label: 'Library', icon: <FaBook /> },
     { path: '/settings',label: 'Settings',icon: <FaCog /> },
   ];
 
   return (
     // hidden md:block: only show on desktop
-    <div className="w-64 bg-gray-800 text-white min-h-screen fixed top-0 left-0 hidden md:block flex flex-col">
+  <div className="w-64 bg-gray-800 text-white h-screen fixed top-0 left-0 hidden md:flex flex-col">
       {/* Logo / Title */}
       <div className="p-6 border-b border-gray-700 text-center">
         <Link to="/prompt" className="flex flex-col items-center space-y-2">
@@ -68,7 +68,7 @@ const Sidebar = () => {
       </nav>
 
       {/* User Profile Area at Bottom */}
-      <div className="p-4 border-t border-gray-700 relative flex flex-col items-center top-96" ref={dropdownRef}>
+      <div className="p-4 border-t border-gray-700 relative flex flex-col items-center mt-auto" ref={dropdownRef}>
         <button
           onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           className="focus:outline-none p-2 rounded-lg hover:bg-gray-700 transition-colors"
