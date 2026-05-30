@@ -8,6 +8,28 @@ import "../styles/QuizSection.css";
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 
 
+/**
+ * Renders an interactive multiple-choice quiz with two modes:
+ *   - "learning": each click reveals correctness + explanation immediately.
+ *   - "testing":  selections are stored silently; explanations + score show
+ *                 only after the user submits.
+ *
+ * Toggling modes resets all per-question state. A "Shuffle Q&A" button
+ * re-randomizes both question order and option order.
+ *
+ * Expected `response` shape (one element per question):
+ *   {
+ *     question: string,
+ *     options:  string[],          // typically 4
+ *     correct:  number,            // index into options
+ *     explanation: string
+ *   }
+ *
+ * @component
+ * @param {Object} props
+ * @param {Array<{question:string,options:string[],correct:number,explanation:string}>} props.response
+ * @returns {JSX.Element}
+ */
 export default function QuizSection({ response }) {
   // console.log('response: ', JSON.stringify(response, null, 2));
   const [processedQuestions, setProcessedQuestions] = useState(response);

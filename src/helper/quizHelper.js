@@ -1,11 +1,12 @@
 // helper/quizHelper.js
 
 /**
- * Randomly shuffle an array (Fisher–Yates shuffle algorithm).
- * The Fisher–Yates shuffle is an algorithm for shuffling a finite sequence. 
- * The algorithm takes a list of all the elements of the sequence, and 
- * continually determines the next element in the shuffled sequence 
- * by randomly drawing an element from the list until no elements remain
+ * Return a new array with the input shuffled in place via Fisher–Yates.
+ * Pure: the input array is not mutated.
+ *
+ * @template T
+ * @param {T[]} array
+ * @returns {T[]} A new shuffled copy.
  */
 export function shuffleArray(array) {
     const shuffled = [...array];
@@ -15,16 +16,15 @@ export function shuffleArray(array) {
     }
     return shuffled;
   }
-  
+
   /**
-   * Given a question object of the form:
-   *   {
-   *     question: "…",
-   *     options: ["A", "B", "C", "D"],
-   *     correct: 1, // index into options
-   *     …otherProps
-   *   }
-   * shuffle its options and return a new question with the correct index updated.
+   * Shuffle a quiz question's options and re-map `correct` to the new index.
+   * Used to randomize answer order on every render so users can't memorize
+   * positions.
+   *
+   * @param {{ question: string, options: string[], correct: number, explanation?: string }} question
+   * @returns {{ question: string, options: string[], correct: number, explanation?: string }}
+   *   Same shape, with `options` shuffled and `correct` updated.
    */
   export function shuffleQuestionOptions(question) {
     const shuffledOptions = shuffleArray(question.options);

@@ -5,6 +5,15 @@ import { useAuth } from '../../contexts/AuthContext';
 import { FaSignInAlt } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 
+/**
+ * Mobile-only top bar (`md:hidden`) with a hamburger that toggles `MobileMenu`.
+ * The desktop equivalent is `Sidebar`.
+ *
+ * @component
+ * @param {Object} props
+ * @param {import('firebase/auth').User} [props.user] - Forwarded to `MobileMenu`.
+ * @returns {JSX.Element}
+ */
 const Header = ({ user }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 

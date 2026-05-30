@@ -6,6 +6,14 @@ import { useEffect } from "react";
 
 // TODO: Keep this page as a landing page, first thing they see. no side bar until they log in
 
+/**
+ * Public landing page. Anyone hitting `/` while signed in is redirected to
+ * `/prompt`; otherwise they see the marketing pitch and a CTA that routes to
+ * either `/prompt` (logged in) or `/register` (logged out).
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const LandingPage = () => {
   const { userLoggedIn } = useAuth();
   const navigate = useNavigate();
@@ -69,7 +77,7 @@ const LandingPage = () => {
           <div className="mt-16 lg:col-span-5 lg:mt-0">
             <div className="relative rounded-2xl bg-gray-800 p-8 shadow-xl ring-1 ring-gray-700/50">
               <div className="absolute -top-12 left-1/2 transform -translate-x-1/2">
-                <div className="flex h-24 w-24 items-center justify-center rounded-full bg-blue-600 text-white shadow-lg">
+                <div className="flex h-24 w-24 items-center justify-center rounded-fullbg-blue-600 text-white shadow-lg">
                   <span className="text-2xl font-bold">⚡</span>
                 </div>
               </div>
@@ -84,7 +92,7 @@ const LandingPage = () => {
               <div className="mt-8 space-y-4">
                 <div className="flex items-center">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-blue-900/50 text-blue-400">
-                    1
+                    1s
                   </div>
                   <p className="ml-4 text-gray-300">Grab your notes, textbook, or transcripts</p>
                 </div>

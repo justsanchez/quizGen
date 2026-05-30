@@ -1,3 +1,16 @@
+/**
+ * DeepSeek (via OpenAI SDK) entry points for quiz and summary generation.
+ *
+ * Per-user prompt overrides are pulled from the Supabase `userFolder` table
+ * (`quizPrompt`, `summaryPrompt`); when absent, the DEFAULT_*_TEMPLATE
+ * constants below are used.
+ *
+ * Required env vars:
+ *   - VITE_DEEPSEEK_API_ACCESS_KEY        (DeepSeek API)
+ *   - VITE_REACT_APP_AWS_REGION           (Bedrock client; initialized but unused)
+ *   - VITE_REACT_APP_AWS_ACCESS_KEY_ID    (Bedrock client; initialized but unused)
+ *   - VITE_REACT_APP_AWS_SECRET_ACCESS_KEY(Bedrock client; initialized but unused)
+ */
 import { BedrockRuntimeClient, InvokeModelCommand } from "@aws-sdk/client-bedrock-runtime";
 import OpenAI from "openai";
 
@@ -101,6 +114,34 @@ try {
   console.error("Error initializing OpenAI client:", error);
 }
 
+/**
+ * Generate a multiple-choice quiz from a transcript via the DeepSeek chat API.
+ *
+ * If `userId` is provided, the user's saved `quizPrompt` from `userFolder` is
+ * spliced into the prompt; otherwise DEFAULT_QUIZ_PROMPT_TEMPLATE is used.
+ *
+ * Returns the raw string content from the LLM. The caller is expected to strip
+ * any ```json fences and `JSON.parse` the result into:
+ *
+ *   {
+ *     title: string,            // <= 50 chars
+ *     quiz: Array<{
+ *       question: string,
+ *       options: [string, string, string, string],
+ *       correct: 0 | 1 | 2 | 3, // index into options
+ *       explanation: string
+ *     }>
+ *   }
+ *
+ * @param {string} transcript - Source material the quiz is generated from.
+ * @param {string} [specialInstructions] - Free-form extra guidance for the LLM.
+ * @param {"deepseek-chat"|"deepseek-r1"} selectedModel - Falls back to "deepseek-chat" if invalid.
+ * @param {string} difficulty - "easy" | "medium" | "hard" | "exam level".
+ * @param {number|"auto"} numQuestions - Exact count, or "auto" to let the model decide.
+ * @param {string} [userId] - Firebase uid; when present, custom prompts are fetched from Supabase.
+ * @returns {Promise<string>} Raw JSON string from the model.
+ * @throws {Error} If the OpenAI client is not initialized or the API response is malformed.
+ */
 export const invokeDeepSeekQuizGenerator = async (transcript, specialInstructions, selectedModel, difficulty, numQuestions, userId) => {
   if (!openai) {
     throw new Error("OpenAI client is not initialized - check your API key");
@@ -208,6 +249,20 @@ export const invokeDeepSeekQuizGenerator = async (transcript, specialInstruction
   }
 };
 
+/**
+ * Generate markdown study notes from a transcript via the DeepSeek chat API.
+ *
+ * If `userId` is provided, the user's saved `summaryPrompt` from `userFolder`
+ * is used (transcript appended); otherwise DEFAULT_SUMMARY_PROMPT_TEMPLATE
+ * is used. The returned markdown is rendered downstream with
+ * `react-markdown` + `rehype-raw`, so inline HTML in the response is allowed.
+ *
+ * @param {string} transcript - Source material to summarize.
+ * @param {string} selectedModel - DeepSeek model id (e.g. "deepseek-chat").
+ * @param {string} [userId] - Firebase uid; when present, custom prompt is fetched from Supabase.
+ * @returns {Promise<string>} Markdown string, with surrounding ```html fences stripped.
+ * @throws {Error} If the OpenAI client is not initialized or the API response is malformed.
+ */
 export const invokeDeepSeekSummaryGenerator = async (transcript, selectedModel, userId) => {
   if (!openai) {
     throw new Error("OpenAI client is not initialized - check your API key");

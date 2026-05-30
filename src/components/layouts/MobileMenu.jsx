@@ -13,6 +13,17 @@ import logo from '../../assets/CartoonPenHeadFeather.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { logout } from '../../firebase/auth';
 
+/**
+ * Slide-out drawer rendered alongside `Header` on mobile. Locks body scroll
+ * while open, exposes the same nav links as the desktop `Sidebar`, and
+ * surfaces sign-in / sign-out actions.
+ *
+ * @component
+ * @param {Object} props
+ * @param {boolean} props.isOpen - Whether the drawer is visible.
+ * @param {() => void} props.toggleMenu - Toggles `isOpen` from a parent.
+ * @returns {JSX.Element}
+ */
 const MobileMenu = ({ isOpen, toggleMenu }) => {
   const { userLoggedIn, currentUser } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

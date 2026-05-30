@@ -5,6 +5,16 @@ import logo from '../../assets/CartoonPenHeadFeather.png';
 import { useAuth } from '../../contexts/AuthContext';
 import { logout } from '../../firebase/auth';
 
+/**
+ * Fixed left-rail navigation for desktop (`md:` and above). Hidden on mobile;
+ * the equivalent mobile experience lives in `Header` + `MobileMenu`.
+ *
+ * Includes nav links (Prompt / Library / Settings) and a bottom-anchored
+ * profile area with a sign-in / sign-out dropdown.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const Sidebar = () => {
   const { userLoggedIn, currentUser } = useAuth();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);

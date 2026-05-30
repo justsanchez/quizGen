@@ -5,6 +5,14 @@ import Header from './Header';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
+/**
+ * Authenticated app shell. Renders the desktop Sidebar and mobile Header
+ * around the routed page content, and acts as the auth guard for protected
+ * routes by redirecting unauthenticated visitors to the landing page (`/`).
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const Layout = () => {
     const { userLoggedIn } = useAuth();
     const navigate = useNavigate();

@@ -4,6 +4,22 @@ import { onAuthStateChanged } from 'firebase/auth';
 
 const AuthContext = createContext();
 
+/**
+ * Subscribes to Firebase auth state and exposes it to the tree. Children are
+ * not rendered until the initial auth resolution completes, so consumers can
+ * trust `currentUser` immediately on mount instead of guarding for `loading`.
+ *
+ * Context shape:
+ *   {
+ *     currentUser:   import('firebase/auth').User | null,
+ *     userLoggedIn:  boolean,
+ *     loading:       boolean
+ *   }
+ *
+ * @component
+ * @param {Object} props
+ * @param {React.ReactNode} props.children
+ */
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -29,6 +45,10 @@ export function AuthProvider({ children }) {
   );
 }
 
+/**
+ * Hook accessor for the AuthContext value.
+ * @returns {{ currentUser: import('firebase/auth').User | null, userLoggedIn: boolean, loading: boolean }}
+ */
 export function useAuth() {
   return useContext(AuthContext);
 }

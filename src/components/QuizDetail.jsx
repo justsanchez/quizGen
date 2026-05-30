@@ -9,6 +9,17 @@ import { useAuth } from "../contexts/AuthContext";
 // Cache key generator
 const getCacheKey = (id, type) => `quiz_cache_${id}_${type}`;
 
+/**
+ * Loader route at `/quiz/:id`. Fetches a saved quiz set + summary from
+ * Supabase, writes them into localStorage, and immediately replaces the
+ * current history entry with `/quizNotes` in `mode: 'load'` so `AIQuizNotes`
+ * re-hydrates the saved data.
+ *
+ * Renders only a loading skeleton; it produces no real UI of its own.
+ *
+ * @component
+ * @returns {JSX.Element|null}
+ */
 export default function QuizDetail() {
     const { id } = useParams();
     const { userLoggedIn } = useAuth();

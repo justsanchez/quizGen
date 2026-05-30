@@ -23,6 +23,25 @@ import {
   invokeDeepSeekSummaryGenerator,
 } from "../services/deepSeek";
 
+/**
+ * Core study screen. Reads inputs from router state and runs in one of two
+ * modes:
+ *   - `mode: 'generate'` — calls DeepSeek to produce a quiz + markdown
+ *     summary, caches both in localStorage (1h TTL) keyed by `quizSummaryId`,
+ *     and offers the user a Save action that opens `SaveQuizModal`.
+ *   - `mode: 'load'`     — re-hydrates a previously saved quiz/summary that
+ *     `QuizDetail` pre-fetched from Supabase.
+ *
+ * UI: tabbed Quiz (delegated to `QuizSection`) and Study Notes (markdown,
+ * editable in place via a textarea / preview toggle).
+ *
+ * Side effects on mount: also queries `quiz_sets` to detect whether the
+ * current `quizSummaryId` was already saved (controls the Save button state)
+ * and fetches the user's prompt overrides from `userFolder`.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function AIQuizNotes() {
   // ! holy this is sick
   const { state } = useLocation();
@@ -61,7 +80,15 @@ export default function AIQuizNotes() {
     return markdownText !== originalText;
   }
 
-  // * function to cache the quiz response, with an expiry time
+  /**
+   * Persist `value` to localStorage under `key` with a TTL. The default of
+   * 1 hour is intentional — it's long enough to survive a refresh but short
+   * enough that stale generations don't pile up indefinitely.
+   *
+   * @param {string} key
+   * @param {unknown} value - Must be JSON-serializable.
+   * @param {number} [ttl=3600000] - Time-to-live in ms.
+   */
   function cacheWithExpiry(key, value, ttl = 1000 * 60 * 60) {
     const now = Date.now();
     const item = {
@@ -70,8 +97,15 @@ export default function AIQuizNotes() {
       expiry: now + ttl, // 1 hour by default
     };
     localStorage.setItem(key, JSON.stringify(item));
-  }  
+  }
 
+  /**
+   * Read a value previously written by `cacheWithExpiry`. Expired entries are
+   * evicted on read so this also acts as lazy GC.
+   *
+   * @param {string} key
+   * @returns {unknown|null} The cached value, or `null` if missing/expired.
+   */
   function getCachedItem(key) {
     // ! to test caching, use localStorage.clear() in the console
     const itemStr = localStorage.getItem(key);

@@ -5,6 +5,16 @@ import { Link } from "react-router-dom";
 
 import { disableScroll, enableScroll } from "../helper/scrollLock";
 
+/**
+ * `/library` page. Fetches the signed-in user's folders and quiz sets from
+ * Supabase and renders each folder as a card. Clicking a folder opens a
+ * modal that lists its quiz sets with tag- and title-based filtering.
+ * Folders can be renamed in place; folder deletion is stubbed (see
+ * `handleDeleteFolder`).
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function Library() {
     const { userLoggedIn, currentUser } = useAuth();
     const [foldersData, setFoldersData] = useState([]);

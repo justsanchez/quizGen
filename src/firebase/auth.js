@@ -1,3 +1,8 @@
+/**
+ * Thin wrappers around Firebase Auth methods, bound to the configured `auth`
+ * instance from ./config. Each function returns the underlying Firebase
+ * promise; callers handle resolution and errors.
+ */
 import {
     createUserWithEmailAndPassword,
     signInWithEmailAndPassword,
@@ -10,39 +15,70 @@ import {
     updatePassword
   } from 'firebase/auth';
   import { auth } from './config';
-  
+
   const googleProvider = new GoogleAuthProvider();
-  
-  // Email/Password Auth
+
+  /**
+   * Create a new Firebase user with an email + password.
+   * @param {string} email
+   * @param {string} password
+   * @returns {Promise<import('firebase/auth').UserCredential>}
+   */
   export const registerWithEmail = (email, password) => {
     return createUserWithEmailAndPassword(auth, email, password);
   };
-  
+
+  /**
+   * Sign in an existing Firebase user with email + password.
+   * @param {string} email
+   * @param {string} password
+   * @returns {Promise<import('firebase/auth').UserCredential>}
+   */
   export const loginWithEmail = (email, password) => {
     return signInWithEmailAndPassword(auth, email, password);
   };
-  
-  // Google Auth
+
+  /**
+   * Sign in via the Google OAuth popup.
+   * @returns {Promise<import('firebase/auth').UserCredential>}
+   */
   export const loginWithGoogle = () => {
     return signInWithPopup(auth, googleProvider);
   };
-  
-  // Password Reset
+
+  /**
+   * Send a password-reset email to the given address.
+   * @param {string} email
+   * @returns {Promise<void>}
+   */
   export const resetPassword = (email) => {
     return sendPasswordResetEmail(auth, email);
   };
-  
-  // Logout
+
+  /**
+   * Sign the current user out.
+   * @returns {Promise<void>}
+   */
   export const logout = () => {
     return signOut(auth);
   };
-  
-  // Update Email
+
+  /**
+   * Update the currently-authenticated user's email address.
+   * Requires recent re-authentication; Firebase will throw otherwise.
+   * @param {string} email
+   * @returns {Promise<void>}
+   */
   export const updateUserEmail = (email) => {
     return updateEmail(auth.currentUser, email);
   };
-  
-  // Update Password
+
+  /**
+   * Update the currently-authenticated user's password.
+   * Requires recent re-authentication; Firebase will throw otherwise.
+   * @param {string} password
+   * @returns {Promise<void>}
+   */
   export const updateUserPassword = (password) => {
     return updatePassword(auth.currentUser, password);
   };

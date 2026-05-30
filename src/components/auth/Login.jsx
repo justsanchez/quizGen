@@ -3,6 +3,14 @@ import { useAuth } from '../../contexts/AuthContext';
 import { loginWithEmail, loginWithGoogle } from '../../firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
 
+/**
+ * Email/password + Google sign-in screen. Surfaces inline error messages
+ * from Firebase, and redirects to `/` on success or if the user is already
+ * authenticated.
+ *
+ * @component
+ * @returns {JSX.Element|null}
+ */
 export default function Login() {
   const { userLoggedIn } = useAuth();
   const navigate = useNavigate();

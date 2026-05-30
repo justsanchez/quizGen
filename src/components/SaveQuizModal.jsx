@@ -4,6 +4,25 @@ import { useAuth } from "../contexts/AuthContext";
 import { toast } from 'react-toastify';
 
 
+/**
+ * Modal for persisting a generated quiz + summary into the user's library.
+ * The user picks an existing folder (or creates a new one), confirms a title,
+ * and on save the modal inserts rows into `folder` (if new), `quiz_sets`,
+ * `quizzes`, and `summaries` (the latter two in parallel).
+ *
+ * Tag input is currently commented out and not wired through.
+ *
+ * @component
+ * @param {Object} props
+ * @param {boolean} props.isOpen - Visibility of the modal.
+ * @param {() => void} props.onClose - Called to dismiss without saving.
+ * @param {string} props.quizSummaryId - UUID linking quiz + summary to a single set.
+ * @param {string} props.quizSummaryTitle - Default title prefilled into the form.
+ * @param {object} props.quizData - JSON quiz to persist into the `quizzes` table.
+ * @param {string} props.summaryData - Markdown summary to persist into `summaries`.
+ * @param {(quizSetId: string) => void} [props.onSaveComplete] - Called with the new `quiz_sets.id` after a successful save.
+ * @returns {JSX.Element|null}
+ */
 const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizData, summaryData, onSaveComplete }) => {
   const { userLoggedIn, currentUser } = useAuth();
   const [userFolder, setUserFolder] = useState([]);

@@ -3,6 +3,14 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { registerWithEmail, loginWithGoogle } from '../../firebase/auth';
 
+/**
+ * New-account screen. Validates that password and confirmation match before
+ * calling Firebase, and offers a Google sign-up alternative. Redirects to
+ * `/` on success or if the user is already authenticated.
+ *
+ * @component
+ * @returns {JSX.Element|null}
+ */
 export default function Register() {
   const { userLoggedIn } = useAuth();
   const navigate = useNavigate();

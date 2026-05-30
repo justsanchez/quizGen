@@ -5,6 +5,17 @@ import "react-toastify/dist/ReactToastify.css";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../supabase/client";
 
+/**
+ * `/settings` page for editing the per-user prompt overrides stored in the
+ * `userFolder` table (`quizPrompt`, `summaryPrompt`). Detects whether the
+ * row uses camelCase or snake_case columns and writes back accordingly, so
+ * either DB schema works without code changes.
+ *
+ * Falls back to a not-logged-in / no-row state when applicable.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const Settings = () => {
   const { userLoggedIn, currentUser } = useAuth();
 

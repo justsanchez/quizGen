@@ -4,6 +4,15 @@ import logo from "../assets/CartoonPenHeadFeather.png";
 import { useAuth } from "../contexts/AuthContext"; // Add this import
 import { logout } from "../firebase/auth";
 
+/**
+ * Top navigation bar shown on the public landing routes (`/`, `/learn-more`).
+ * Renders sign-in / sign-up links when logged out, or an avatar dropdown
+ * (Profile / Sign Out) when logged in. The authenticated app uses `Sidebar`
+ * + `Header` instead.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 const Navbar = () => {
   const { userLoggedIn, currentUser } = useAuth(); // Get auth state
   const [username] = useState("Alvaro Sanchez");

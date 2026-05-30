@@ -5,6 +5,19 @@ import { useDevelopingFlag } from "../contexts/DevelopingFlag";
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from "../contexts/AuthContext";
 
+/**
+ * Quiz-generation form. Collects the source transcript, difficulty, question
+ * count, optional special instructions, and selected DeepSeek model, then
+ * navigates to `/quizNotes` with the inputs (plus a freshly minted
+ * `quizSummaryId`) packed into router state for `AIQuizNotes` to consume.
+ *
+ * Validation: prompt must be 6–4000 words; special instructions, if provided,
+ * must be 10–100 words. When `isDeveloping` is true, validation errors are
+ * bypassed so devs can submit anything.
+ *
+ * @component
+ * @returns {JSX.Element}
+ */
 export default function PromptSection() {
   const [prompt, setPrompt] = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");

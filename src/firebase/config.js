@@ -1,7 +1,14 @@
+/**
+ * Firebase initialization. Reads credentials from Vite env vars:
+ *   VITE_APIKEY, VITE_AUTHDOMAIN, VITE_PROJECTID,
+ *   VITE_STORAGEBUCKET, VITE_MESSAGINGSENDERID, VITE_APPID
+ *
+ * Exports:
+ *   - `db`   — Firestore instance (currently unused by app code; reserved)
+ *   - `auth` — Firebase Auth instance, consumed by ./auth.js and AuthContext
+ */
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
-
-//GetAuth Method is used to Configure our app to use Firebase Authentication
 import { getAuth } from "firebase/auth";
 
 const firebaseConfig = {
