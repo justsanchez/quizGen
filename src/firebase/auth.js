@@ -12,7 +12,8 @@ import {
     GoogleAuthProvider,
     signOut,
     updateEmail,
-    updatePassword
+    updatePassword,
+    deleteUser,
   } from 'firebase/auth';
   import { auth } from './config';
 
@@ -81,4 +82,14 @@ import {
    */
   export const updateUserPassword = (password) => {
     return updatePassword(auth.currentUser, password);
+  };
+
+  /**
+   * Permanently delete the currently-authenticated Firebase user.
+   * Firebase may throw `auth/requires-recent-login` if the session is stale;
+   * callers should catch that and prompt the user to re-authenticate.
+   * @returns {Promise<void>}
+   */
+  export const deleteCurrentUser = () => {
+    return deleteUser(auth.currentUser);
   };

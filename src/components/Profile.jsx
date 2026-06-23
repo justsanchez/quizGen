@@ -5,7 +5,8 @@ import { toast } from "react-toastify";
 
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../supabase/client";
-import { logout, resetPassword } from "../firebase/auth";
+import { logout, resetPassword, deleteCurrentUser } from "../firebase/auth";
+import { deleteUserData } from "../supabase/userFolder";
 import { normalizeTags } from "../helper/quizHelper";
 
 // `content-container` lives in this stylesheet; import it so the class is bundled
@@ -42,6 +43,8 @@ export default function Profile() {
   const [quizSets, setQuizSets] = useState([]);
   const [questionsPracticed, setQuestionsPracticed] = useState(null); // null → "—" (best-effort)
   const [sendingReset, setSendingReset] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -156,6 +159,24 @@ export default function Profile() {
     } catch (error) {
       console.error("Logout error:", error);
       toast.error("Failed to sign out.");
+    }
+  };
+
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    try {
+      await deleteUserData(currentUser.uid);
+      await deleteCurrentUser();
+      // Auth state change triggers Layout's guard — no explicit navigate needed.
+    } catch (error) {
+      console.error("Account deletion error:", error);
+      if (error.code === "auth/requires-recent-login") {
+        toast.error("For security, please sign out and sign back in before deleting your account.");
+      } else {
+        toast.error("Failed to delete account. Please try again.");
+      }
+      setDeleting(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -358,6 +379,42 @@ export default function Profile() {
             You're signed in with Google — manage your password through your Google account.
           </p>
         )}
+
+        {/* Danger zone */}
+        <div className="mt-6 pt-4 border-t border-gray-700">
+          <h4 className="text-sm font-semibold text-red-400 mb-2">Danger Zone</h4>
+          {!showDeleteConfirm ? (
+            <button
+              onClick={() => setShowDeleteConfirm(true)}
+              className="inline-flex items-center gap-2 px-4 py-2 border border-red-600 text-red-400 hover:bg-red-600 hover:text-white rounded transition-colors text-sm"
+            >
+              Delete account
+            </button>
+          ) : (
+            <div className="bg-red-950/40 border border-red-700 rounded-lg p-4">
+              <p className="text-sm text-red-300 font-medium mb-1">This cannot be undone.</p>
+              <p className="text-xs text-gray-400 mb-4">
+                All your folders, study sets, quizzes, and summaries will be permanently deleted, and your account will be removed.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={handleDeleteAccount}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded text-white text-sm font-medium"
+                >
+                  {deleting ? "Deleting…" : "Yes, delete everything"}
+                </button>
+                <button
+                  onClick={() => setShowDeleteConfirm(false)}
+                  disabled={deleting}
+                  className="px-4 py-2 bg-gray-700 hover:bg-gray-600 disabled:opacity-50 rounded text-white text-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
