@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { registerWithEmail, loginWithGoogle } from '../../firebase/auth';
+import { ensureUserFolder } from '../../supabase/userFolder';
 
 /**
  * New-account screen. Validates that password and confirmation match before
@@ -31,7 +32,8 @@ export default function Register() {
     setError('');
     
     try {
-      await registerWithEmail(email, password);
+      const credential = await registerWithEmail(email, password);
+      await ensureUserFolder(credential.user.uid);
       navigate('/');
     } catch (error) {
       setError(error.message);
@@ -42,7 +44,8 @@ export default function Register() {
 
   const handleGoogleSignUp = async () => {
     try {
-      await loginWithGoogle();
+      const credential = await loginWithGoogle();
+      await ensureUserFolder(credential.user.uid);
       navigate('/');
     } catch (error) {
       setError(error.message);

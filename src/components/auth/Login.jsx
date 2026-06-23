@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
 import { loginWithEmail, loginWithGoogle } from '../../firebase/auth';
+import { getAdditionalUserInfo } from 'firebase/auth';
 import { useNavigate, Link } from 'react-router-dom';
+import { ensureUserFolder } from '../../supabase/userFolder';
 
 /**
  * Email/password + Google sign-in screen. Surfaces inline error messages
@@ -34,7 +36,10 @@ export default function Login() {
 
   const handleGoogleLogin = async () => {
     try {
-      await loginWithGoogle();
+      const credential = await loginWithGoogle();
+      if (getAdditionalUserInfo(credential)?.isNewUser) {
+        await ensureUserFolder(credential.user.uid);
+      }
       navigate('/');
     } catch (error) {
       setError(error.message);
