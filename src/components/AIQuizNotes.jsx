@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { shuffleArray, shuffleQuestionOptions } from "../helper/quizHelper";
+import { shuffleArray, shuffleQuestionOptions, normalizeTags } from "../helper/quizHelper";
 import { useAuth } from "../contexts/AuthContext";
 
 import { supabase } from "../supabase/client";
@@ -13,6 +13,7 @@ import remarkGfm from "remark-gfm";
 // Install via: npm install rehype-raw
 import rehypeRaw from "rehype-raw";
 import QuizSection from "./QuizSection";
+import FlashcardSection from "./FlashcardSection";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useDevelopingFlag } from "../contexts/DevelopingFlag";
@@ -69,6 +70,18 @@ export default function AIQuizNotes() {
   const [currentQuizSetExists, setCurrentQuizSetExists] = useState(false);
   const [fetchingQuizSetLoading, setFetchingQuizSetLoading] = useState(true);
   const { userLoggedIn, currentUser } = useAuth();
+
+  // ! quiz set metadata (title + tags) editing
+  const [quizSetRow, setQuizSetRow] = useState(null);      // saved quiz_sets row, when one exists
+  const [pendingTags, setPendingTags] = useState([]);      // tags chosen before the set is saved (generate flow)
+  const [showMetaModal, setShowMetaModal] = useState(false);
+  const [editTitle, setEditTitle] = useState('');
+  const [editTags, setEditTags] = useState('');            // comma-separated tag input
+  const [savingMeta, setSavingMeta] = useState(false);
+  const metaInputRef = useRef(null);
+
+  // Tags to display: prefer the saved row, fall back to pending (pre-save) tags.
+  const displayTags = quizSetRow ? normalizeTags(quizSetRow.tags) : pendingTags;
 
 
   // ! setting up the quiz and summary prompt template
@@ -632,6 +645,8 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
         if (quizSets && quizSets.length > 0) {
           setCurrentQuizSetExists(true);
+          // Keep the saved row so we can show/edit its title + tags
+          setQuizSetRow(quizSets[0]);
         }
 
         console.log('INSIDE fetchQuizSets | quizSets', JSON.stringify(quizSets, null, 2));
@@ -651,6 +666,14 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     }
     fetchQuizSets();
   }, [state]);
+
+  // Pull focus into the metadata modal's input when it opens, so Enter/typing is
+  // captured by the modal rather than the page beneath it.
+  useEffect(() => {
+    if (showMetaModal) {
+      metaInputRef.current?.focus();
+    }
+  }, [showMetaModal]);
 
   if (!state?.transcript && !state?.summaryFetch && !state?.quizFetch) {
     return <div>No transcript or summary or quiz provided. Please go back and enter one.</div>;
@@ -738,12 +761,71 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     }
   };
 
+  // =============== Quiz set: rename + tags ===============
+  const handleOpenMeta = () => {
+    setEditTitle(title || quizSetRow?.title || '');
+    setEditTags(displayTags.join(', '));
+    setShowMetaModal(true);
+  };
+
+  const handleCancelMeta = () => {
+    setShowMetaModal(false);
+  };
+
+  const handleSaveMeta = async () => {
+    const newTitle = editTitle.trim();
+    const tagsArr = normalizeTags(editTags);
+    // `tags` is a text column, so store a plain comma-separated string.
+    const tagString = tagsArr.join(', ');
+
+    if (quizSetRow?.id) {
+      // Saved set — persist to Supabase.
+      setSavingMeta(true);
+      try {
+        const { error } = await supabase
+          .from('quiz_sets')
+          .update({ title: newTitle || quizSetRow.title, tags: tagString })
+          .eq('id', quizSetRow.id);
+
+        if (error) throw error;
+
+        setQuizSetRow((prev) => ({ ...prev, title: newTitle || prev.title, tags: tagString }));
+        if (newTitle) setTitle(newTitle);
+        toast.success('Quiz details updated');
+        setShowMetaModal(false);
+      } catch (error) {
+        console.error('Error updating quiz details:', error);
+        toast.error('Failed to update quiz details');
+      } finally {
+        setSavingMeta(false);
+      }
+    } else {
+      // Not saved yet (generate flow) — keep locally; these feed SaveQuizModal.
+      if (newTitle) setTitle(newTitle);
+      setPendingTags(tagsArr);
+      toast.info('Saved — these apply when you save your study set');
+      setShowMetaModal(false);
+    }
+  };
+
 
   return (
     <>
-  <div className="flex items-center justify-center gap-3 mb-6">
+  <div className="mb-6">
+  <div className="flex items-center justify-center gap-3">
   <p className="text-gray-200 text-xl font-bold text-center">{title}</p>
-  
+
+  {/* Edit title & tags */}
+  <button
+    onClick={handleOpenMeta}
+    title="Edit title & tags"
+    className="p-2 text-gray-400 hover:text-white transition-colors"
+  >
+    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  </button>
+
   {/* Save Button next to title */}
   {state.mode === 'generate' && (
     <button
@@ -778,6 +860,25 @@ These notes should help you follow along with Stephan Mareek's video and prepare
       </span>
     </button>
   )}
+  </div>
+
+  {/* Tags */}
+  <div className="flex flex-wrap items-center justify-center gap-2 mt-3">
+    {displayTags.length > 0 ? (
+      displayTags.map((tag, index) => (
+        <span key={index} className="text-xs bg-blue-600 px-2 py-1 rounded-full text-gray-100">
+          {tag}
+        </span>
+      ))
+    ) : (
+      <span className="text-xs text-gray-500 italic">No tags yet</span>
+    )}
+    <button
+      onClick={handleOpenMeta}
+      className="text-xs text-blue-400 hover:text-blue-300 underline"
+    >
+    </button>
+  </div>
 </div>
 
 
@@ -789,16 +890,92 @@ These notes should help you follow along with Stephan Mareek's video and prepare
     onClose={() => setShowSaveModal(false)}
     quizSummaryId={state.quizSummaryId}
     quizSummaryTitle={title}
+    initialTags={pendingTags}
     quizData={responseToSaveInBackend}
     summaryData={summary}
-    onSaveComplete={(quizSetId) => {
+    onSaveComplete={(quizSetId, savedTags) => {
       console.log("Quiz set saved with ID:", quizSetId);
       toast.success("Quiz set saved successfully!");
       setFetchingQuizSetLoading(false);
       setShowSaveModal(false);
       setCurrentQuizSetExists(true);
+      // Track the freshly-saved row so further title/tag edits persist to it.
+      setQuizSetRow({ id: quizSetId, title, tags: savedTags ?? pendingTags.join(', ') });
     }}
   />
+
+  {/* Edit Title & Tags Modal */}
+  {showMetaModal && (
+    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+      <div className="bg-gray-800 rounded-lg p-6 w-full max-w-md text-gray-200">
+        <h2 className="text-xl font-semibold mb-4">Edit Quiz Details</h2>
+
+        <label className="block text-sm text-gray-300 mb-1">Title</label>
+        <input
+          ref={metaInputRef}
+          type="text"
+          value={editTitle}
+          onChange={(e) => setEditTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleSaveMeta(); }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleCancelMeta(); }
+          }}
+          className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Enter quiz title"
+          autoComplete="off"
+        />
+
+        <label className="block text-sm text-gray-300 mb-1">Tags</label>
+        <p className="text-xs text-gray-400 mb-2">Separate tags with commas.</p>
+        <input
+          type="text"
+          value={editTags}
+          onChange={(e) => setEditTags(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter') { e.preventDefault(); e.stopPropagation(); handleSaveMeta(); }
+            if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); handleCancelMeta(); }
+          }}
+          className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white mb-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="e.g. biology, midterm, chapter-3"
+          autoComplete="off"
+        />
+
+        {/* Live preview of parsed tags */}
+        {normalizeTags(editTags).length > 0 && (
+          <div className="flex flex-wrap gap-1 mb-4">
+            {normalizeTags(editTags).map((tag, index) => (
+              <span key={index} className="text-xs bg-blue-600 px-2 py-1 rounded-full">
+                {tag}
+              </span>
+            ))}
+          </div>
+        )}
+
+        {!quizSetRow?.id && (
+          <p className="text-xs text-gray-400 mb-4">
+            This study set isn't saved yet — your title and tags will be applied when you save it.
+          </p>
+        )}
+
+        <div className="flex justify-end gap-3">
+          <button
+            onClick={handleCancelMeta}
+            disabled={savingMeta}
+            className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleSaveMeta}
+            disabled={savingMeta || !editTitle.trim()}
+            className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            {savingMeta ? 'Saving...' : 'Save'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 
     <div className="content-container">
       <div className="shadow-sm z-50">
@@ -809,6 +986,12 @@ These notes should help you follow along with Stephan Mareek's video and prepare
               onClick={() => setActiveTab("quiz")}
             >
               Quiz
+            </button>
+            <button
+              className={`tab-button ${activeTab === "flashcards" ? "active" : ""}`}
+              onClick={() => setActiveTab("flashcards")}
+            >
+              Flashcards
             </button>
             <button
               className={`tab-button ${activeTab === "summary" ? "active" : ""
@@ -828,11 +1011,19 @@ These notes should help you follow along with Stephan Mareek's video and prepare
 
 
 
-      {activeTab === "quiz" ? (
+      {activeTab === "quiz" && (
         <div className="tab-content">
           <QuizSection response={response} />
         </div>
-      ) : (
+      )}
+
+      {activeTab === "flashcards" && (
+        <div className="tab-content">
+          <FlashcardSection response={response} />
+        </div>
+      )}
+
+      {activeTab === "summary" && (
 
           <div className="mt-4 max-w-3xl mx-auto p-6 shadow-lg rounded-lg">
           <div className="flex justify-end mb-2">

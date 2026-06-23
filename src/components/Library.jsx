@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import { supabase } from "../supabase/client";
 import { Link } from "react-router-dom";
 
 import { disableScroll, enableScroll } from "../helper/scrollLock";
+import { normalizeTags } from "../helper/quizHelper";
 
 /**
  * `/library` page. Fetches the signed-in user's folders and quiz sets from
@@ -35,7 +36,20 @@ export default function Library() {
     const [tagFilter, setTagFilter] = useState("");
     const [selectedTitle, setSelectedTitle] = useState("");
 
-    const [menuOpen, setMenuOpen] = useState(null); // Track which menu is open
+    const [menuOpen, setMenuOpen] = useState(null); // Track which folder menu is open
+
+    // Per-quiz options menu + edit state
+    const [quizMenuOpen, setQuizMenuOpen] = useState(null); // quizSet.id whose menu is open
+    const [editingQuiz, setEditingQuiz] = useState(null);   // quizSet being renamed
+    const [editQuizTitle, setEditQuizTitle] = useState("");
+    const [taggingQuiz, setTaggingQuiz] = useState(null);   // quizSet whose tags are being edited
+    const [editQuizTags, setEditQuizTags] = useState("");   // comma-separated tag input
+
+    // Whichever quiz modal (rename/tags) is open shares this input ref so we can
+    // explicitly move focus into it on open — `autoFocus` alone is unreliable
+    // here, and without focus inside the modal an Enter keypress activates the
+    // still-focused quiz <Link> underneath, navigating away and closing the page.
+    const quizInputRef = useRef(null);
 
 
 
@@ -222,7 +236,7 @@ export default function Library() {
 
     // Scroll lock when modal is open
     useEffect(() => {
-        if (editingFolder) {
+        if (editingFolder || editingQuiz || taggingQuiz) {
             disableScroll();
         } else {
             enableScroll();
@@ -231,7 +245,15 @@ export default function Library() {
         return () => {
             enableScroll();
         };
-    }, [editingFolder]);
+    }, [editingFolder, editingQuiz, taggingQuiz]);
+
+    // Pull focus into the quiz modal's input once it has mounted, so keyboard
+    // input (and Enter) is captured by the modal rather than the page beneath it.
+    useEffect(() => {
+        if (editingQuiz || taggingQuiz) {
+            quizInputRef.current?.focus();
+        }
+    }, [editingQuiz, taggingQuiz]);
 
     const handleEditFolder = (folder) => {
         setEditingFolder(folder);
@@ -277,42 +299,139 @@ export default function Library() {
         setMenuOpen(null);
     };
 
-   
+    // =============== Quiz set: rename + tags ===============
+
+    /** Recompute the union of tags across a folder's quiz sets (drives the filter dropdown). */
+    const recomputeFolderTags = (sets, folderId) => {
+        const union = [...new Set(
+            sets.filter(q => q.folder_id === folderId).flatMap(q => normalizeTags(q.tags))
+        )];
+        setTagsToQuizSetMap(prev => ({ ...prev, [folderId]: union }));
+    };
+
+    // ---- Rename ----
+    const handleEditQuiz = (quizSet) => {
+        setEditingQuiz(quizSet);
+        setEditQuizTitle(quizSet.title || "");
+        setQuizMenuOpen(null);
+    };
+
+    const handleSaveQuizName = async () => {
+        if (!editingQuiz || !editQuizTitle.trim()) return;
+
+        try {
+            const newTitle = editQuizTitle.trim();
+            const { error } = await supabase
+                .from('quiz_sets')
+                .update({ title: newTitle })
+                .eq('id', editingQuiz.id);
+
+            if (error) throw error;
+
+            setQuizSets(prev => prev.map(q =>
+                q.id === editingQuiz.id ? { ...q, title: newTitle } : q
+            ));
+
+            handleCancelEditQuiz();
+        } catch (error) {
+            console.error('Error updating quiz name:', error);
+            alert('Failed to update quiz name');
+        }
+    };
+
+    const handleCancelEditQuiz = () => {
+        setEditingQuiz(null);
+        setEditQuizTitle("");
+        setQuizMenuOpen(null);
+    };
+
+    // ---- Tags ----
+    const handleTagQuiz = (quizSet) => {
+        setTaggingQuiz(quizSet);
+        setEditQuizTags(normalizeTags(quizSet.tags).join(", "));
+        setQuizMenuOpen(null);
+    };
+
+    const handleSaveQuizTags = async () => {
+        if (!taggingQuiz) return;
+
+        try {
+            const tagArray = normalizeTags(editQuizTags);
+            // The `tags` column is a text column, so store a plain comma-separated
+            // string. Persisting a JS array here serializes to `["a","b"]`, which
+            // then renders with stray brackets/quotes.
+            const tagString = tagArray.join(", ");
+            const { error } = await supabase
+                .from('quiz_sets')
+                .update({ tags: tagString })
+                .eq('id', taggingQuiz.id);
+
+            if (error) throw error;
+
+            const updated = quizSets.map(q =>
+                q.id === taggingQuiz.id ? { ...q, tags: tagString } : q
+            );
+            setQuizSets(updated);
+            recomputeFolderTags(updated, taggingQuiz.folder_id);
+
+            handleCancelTagQuiz();
+        } catch (error) {
+            console.error('Error updating quiz tags:', error);
+            alert('Failed to update quiz tags');
+        }
+    };
+
+    const handleCancelTagQuiz = () => {
+        setTaggingQuiz(null);
+        setEditQuizTags("");
+        setQuizMenuOpen(null);
+    };
+
+
 
     useEffect(() => {
-        const openModals = [editingFolder, menuOpen, showModal].filter(Boolean);
+        const openModals = [editingFolder, menuOpen, showModal, quizMenuOpen, editingQuiz, taggingQuiz].filter(Boolean);
         if (openModals.length === 0) return;
-    
+
         const handleEscape = (e) => {
             if (e.key === 'Escape') {
+                // Close the most specific overlay first
+                if (editingQuiz) return handleCancelEditQuiz();
+                if (taggingQuiz) return handleCancelTagQuiz();
+                if (quizMenuOpen) return setQuizMenuOpen(null);
                 if (editingFolder) handleCancelEdit();
                 if (menuOpen) setMenuOpen(null);
                 if (showModal) setShowModal(false);
             }
         };
-    
+
         const handleClickOutside = (e) => {
+            // Ordered top-most overlay first. Only the top-most open overlay reacts
+            // to an outside-click, so dismissing an upper layer (e.g. Cancel on the
+            // quiz modal) doesn't also close the folder modal stacked beneath it.
             const modals = [
+                { state: editingQuiz, selector: '.edit-quiz-modal', action: handleCancelEditQuiz },
+                { state: taggingQuiz, selector: '.tag-quiz-modal', action: handleCancelTagQuiz },
+                { state: quizMenuOpen, selector: '.quiz-menu', action: () => setQuizMenuOpen(null) },
                 { state: editingFolder, selector: '.edit-folder-modal', action: handleCancelEdit },
                 { state: menuOpen, selector: '.folder-modal', action: () => setMenuOpen(null) },
                 { state: showModal, selector: '.show-folder-modal', action: () => setShowModal(false) }
             ];
-    
-            modals.forEach(({ state, selector, action }) => {
-                if (state && !e.target.closest(selector)) {
-                    action();
-                }
-            });
+
+            const topMost = modals.find(({ state }) => state);
+            if (topMost && !e.target.closest(topMost.selector)) {
+                topMost.action();
+            }
         };
-    
+
         document.addEventListener('keydown', handleEscape);
         document.addEventListener('mousedown', handleClickOutside);
-        
+
         return () => {
             document.removeEventListener('keydown', handleEscape);
             document.removeEventListener('mousedown', handleClickOutside);
         };
-    }, [editingFolder, menuOpen, showModal]);
+    }, [editingFolder, menuOpen, showModal, quizMenuOpen, editingQuiz, taggingQuiz]);
 
 
     if (loading) {
@@ -536,53 +655,195 @@ export default function Library() {
 
                                     {/* getFilteredQuizSetsInFolder */}
                                     {/* getQuizSetsInFolder */}
-                                    {getFilteredQuizSetsInFolder(selectedFolder.id).map((quizSet) => (
+                                    {getFilteredQuizSetsInFolder(selectedFolder.id).map((quizSet) => {
+                                        const quizTags = normalizeTags(quizSet.tags);
+                                        return (
+                                        <div key={quizSet.id} className="relative group/quiz">
                                             <Link
-                                                key={quizSet.id}
                                                 to={`/quiz/${quizSet.id}`}
-                                                className="block p-3 border border-gray-600 rounded-lg hover:bg-gray-500"
-                                            onClick={() => setShowModal(false)}
-                                        >
-                                            {/* <pre className="text-xs text-gray-400 ml-4">
-                                        {JSON.stringify(quizSet, null, 2)}
-                                    </pre> */}
-                                            <div className="flex items-center justify-between">
-                                                <h4 className="font-medium truncate">
-                                                    {quizSet.title}
-                                                </h4>
-                                                <span className="text-sm text-gray-400">
-                                                    {new Date(quizSet.created_at).toLocaleDateString()}
-                                                </span>
-                                            </div>
-                                            {quizSet.tags && (
-                                                <div className="flex flex-wrap gap-1 mt-2">
-                                                    {(Array.isArray(quizSet.tags)
-                                                    ? quizSet.tags
-                                                    : typeof quizSet.tags === "string"
-                                                        ? quizSet.tags.split(",").map(tag => tag.trim())
-                                                        : []
-                                                    )
-                                                    .slice(0, 3)
-                                                    .map((tag, index) => (
-                                                        <span
-                                                        key={index}
-                                                        className="text-xs bg-blue-600 px-2 py-1 rounded-full"
-                                                        >
-                                                        {tag}
-                                                        </span>
-                                                    ))}
-                                                    {Array.isArray(quizSet.tags) && quizSet.tags.length > 3 && (
-                                                    <span className="text-xs text-gray-400">
-                                                        +{quizSet.tags.length - 3} more
+                                                className="block p-3 pr-10 border border-gray-600 rounded-lg hover:bg-gray-500"
+                                                onClick={() => setShowModal(false)}
+                                            >
+                                                <div className="flex items-center justify-between">
+                                                    <h4 className="font-medium truncate">
+                                                        {quizSet.title}
+                                                    </h4>
+                                                    <span className="text-sm text-gray-400">
+                                                        {new Date(quizSet.created_at).toLocaleDateString()}
                                                     </span>
-                                                    )}
                                                 </div>
-                                            )}
-                                        </Link>
-                                    ))}
+                                                {quizTags.length > 0 && (
+                                                    <div className="flex flex-wrap gap-1 mt-2">
+                                                        {quizTags.slice(0, 3).map((tag, index) => (
+                                                            <span
+                                                                key={index}
+                                                                className="text-xs bg-blue-600 px-2 py-1 rounded-full"
+                                                            >
+                                                                {tag}
+                                                            </span>
+                                                        ))}
+                                                        {quizTags.length > 3 && (
+                                                            <span className="text-xs text-gray-400">
+                                                                +{quizTags.length - 3} more
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
+                                            </Link>
+
+                                            {/* Three-dot quiz options menu */}
+                                            <div className="quiz-menu absolute top-2 right-2" onClick={(e) => e.stopPropagation()}>
+                                                <button
+                                                    onClick={(e) => {
+                                                        e.preventDefault();
+                                                        e.stopPropagation();
+                                                        setQuizMenuOpen(quizMenuOpen === quizSet.id ? null : quizSet.id);
+                                                    }}
+                                                    className="p-1 text-gray-400 hover:text-white transition-colors"
+                                                    title="Quiz options"
+                                                >
+                                                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" />
+                                                    </svg>
+                                                </button>
+
+                                                {quizMenuOpen === quizSet.id && (
+                                                    <div className="absolute right-0 mt-1 w-36 bg-gray-700 border border-gray-600 rounded-lg shadow-lg z-30">
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleEditQuiz(quizSet);
+                                                            }}
+                                                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-600 flex items-center"
+                                                        >
+                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                            </svg>
+                                                            Rename quiz
+                                                        </button>
+                                                        <button
+                                                            onClick={(e) => {
+                                                                e.preventDefault();
+                                                                e.stopPropagation();
+                                                                handleTagQuiz(quizSet);
+                                                            }}
+                                                            className="w-full px-3 py-2 text-left text-sm hover:bg-gray-600 flex items-center"
+                                                        >
+                                                            <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 7h.01M7 3h5a1.99 1.99 0 011.414.586l7 7a2 2 0 010 2.828l-5 5a2 2 0 01-2.828 0l-7-7A1.99 1.99 0 013 9V4a1 1 0 011-1z" />
+                                                            </svg>
+                                                            Add tags
+                                                        </button>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        );
+                                    })}
 
                                 </div>
                             )}
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rename Quiz Modal */}
+            {editingQuiz && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="edit-quiz-modal bg-gray-800 rounded-lg p-6 w-full max-w-md">
+                        <h2 className="text-xl font-semibold mb-4">Rename Quiz</h2>
+                        <input
+                            ref={quizInputRef}
+                            type="text"
+                            value={editQuizTitle}
+                            onChange={(e) => setEditQuizTitle(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleSaveQuizName();
+                                }
+                                if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleCancelEditQuiz();
+                                }
+                            }}
+                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white mb-4 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="Enter quiz name"
+                            autoComplete="off"
+                        />
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleCancelEditQuiz}
+                                className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveQuizName}
+                                disabled={!editQuizTitle.trim()}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            >
+                                Save Changes
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Edit Quiz Tags Modal */}
+            {taggingQuiz && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-[60]">
+                    <div className="tag-quiz-modal bg-gray-800 rounded-lg p-6 w-full max-w-md">
+                        <h2 className="text-xl font-semibold mb-1">Edit Tags</h2>
+                        <p className="text-sm text-gray-400 mb-4">Separate tags with commas.</p>
+                        <input
+                            ref={quizInputRef}
+                            type="text"
+                            value={editQuizTags}
+                            onChange={(e) => setEditQuizTags(e.target.value)}
+                            onKeyDown={(e) => {
+                                if (e.key === 'Enter') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleSaveQuizTags();
+                                }
+                                if (e.key === 'Escape') {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleCancelTagQuiz();
+                                }
+                            }}
+                            className="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-white mb-3 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                            placeholder="e.g. biology, midterm, chapter-3"
+                            autoComplete="off"
+                        />
+                        {/* Live preview of parsed tags */}
+                        {normalizeTags(editQuizTags).length > 0 && (
+                            <div className="flex flex-wrap gap-1 mb-4">
+                                {normalizeTags(editQuizTags).map((tag, index) => (
+                                    <span key={index} className="text-xs bg-blue-600 px-2 py-1 rounded-full">
+                                        {tag}
+                                    </span>
+                                ))}
+                            </div>
+                        )}
+                        <div className="flex justify-end gap-3">
+                            <button
+                                onClick={handleCancelTagQuiz}
+                                className="px-4 py-2 border border-gray-600 rounded-lg hover:bg-gray-700 transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleSaveQuizTags}
+                                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
+                            >
+                                Save Tags
+                            </button>
                         </div>
                     </div>
                 </div>

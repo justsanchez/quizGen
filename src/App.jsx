@@ -6,6 +6,7 @@ import ScrollToTop from "./components/ScrollToTop";
 import LearnMore from "./components/LearnMore";
 import Library from "./components/Library";
 import Settings from "./components/Settings";
+import Profile from "./components/Profile";
 
 // Quiz Detail - 
 import QuizDetail from "./components/QuizDetail";
@@ -69,6 +70,7 @@ export default function App() {
             <Route path="/quizNotes" element={<AIQuizNotes />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/library" element={<Library />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="/layout" element={<Layout />} />
             <Route path="/quiz/:id" element={<QuizDetail />} />
           </Route>

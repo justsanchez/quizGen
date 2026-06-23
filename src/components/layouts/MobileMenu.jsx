@@ -8,6 +8,7 @@ import {
     FaSignInAlt,
     FaSignOutAlt,
   FaUserPlus,
+  FaUserCircle,
 } from 'react-icons/fa';
 import logo from '../../assets/CartoonPenHeadFeather.png';
 import { useAuth } from '../../contexts/AuthContext';
@@ -62,6 +63,7 @@ const MobileMenu = ({ isOpen, toggleMenu }) => {
   const navItems = [
     { path: '/prompt', label: 'Prompt', icon: <FaFeather /> },
     { path: '/library', label: 'Library', icon: <FaBook /> },
+    { path: '/profile', label: 'Profile', icon: <FaUserCircle /> },
     { path: '/settings', label: 'Settings', icon: <FaCog /> },
   ];
 

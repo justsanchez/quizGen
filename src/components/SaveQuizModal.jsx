@@ -10,35 +10,44 @@ import { toast } from 'react-toastify';
  * and on save the modal inserts rows into `folder` (if new), `quiz_sets`,
  * `quizzes`, and `summaries` (the latter two in parallel).
  *
- * Tag input is currently commented out and not wired through.
- *
  * @component
  * @param {Object} props
  * @param {boolean} props.isOpen - Visibility of the modal.
  * @param {() => void} props.onClose - Called to dismiss without saving.
  * @param {string} props.quizSummaryId - UUID linking quiz + summary to a single set.
  * @param {string} props.quizSummaryTitle - Default title prefilled into the form.
+ * @param {string[]|string} [props.initialTags] - Tags to prefill (array or comma-separated string).
  * @param {object} props.quizData - JSON quiz to persist into the `quizzes` table.
  * @param {string} props.summaryData - Markdown summary to persist into `summaries`.
- * @param {(quizSetId: string) => void} [props.onSaveComplete] - Called with the new `quiz_sets.id` after a successful save.
+ * @param {(quizSetId: string, tags: string) => void} [props.onSaveComplete] - Called with the new `quiz_sets.id` and the saved comma-separated tags after a successful save.
  * @returns {JSX.Element|null}
  */
-const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizData, summaryData, onSaveComplete }) => {
+/** Coerce an `initialTags` prop (array or comma-separated string) into an array. */
+const toTagArray = (value) => {
+  if (Array.isArray(value)) return value.map((t) => String(t).trim()).filter(Boolean);
+  if (typeof value === "string") return value.split(",").map((t) => t.trim()).filter(Boolean);
+  return [];
+};
+
+const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, initialTags, quizData, summaryData, onSaveComplete }) => {
   const { userLoggedIn, currentUser } = useAuth();
   const [userFolder, setUserFolder] = useState([]);
   const [folders, setFolders] = useState([]);
   const [selectedFolderId, setSelectedFolderId] = useState("");
   const [newFolderName, setNewFolderName] = useState("");
   const [quizSetTitle, setQuizSetTitle] = useState(quizSummaryTitle);
-  const [tags, setTags] = useState([]);
+  const [tags, setTags] = useState(() => toTagArray(initialTags));
   const [newTag, setNewTag] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [createNewFolder, setCreateNewFolder] = useState(false);
 
-  // Fetch user's folders when modal opens
+  // Fetch user's folders when modal opens, and sync title/tags from the latest
+  // props (state initializers only run once, so this keeps a reopened modal fresh).
   React.useEffect(() => {
     if (isOpen) {
       fetchFolders();
+      setQuizSetTitle(quizSummaryTitle);
+      setTags(toTagArray(initialTags));
     }
   }, [isOpen]);
 
@@ -120,6 +129,8 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
           folder_id: folderId,
           quiz_summary_id: quizSummaryId,
           title: quizSetTitle.trim(),
+          // Stored as a comma-separated string to match the `tags` text column.
+          tags: tags.join(', '),
         })
         .select()
         .single();
@@ -144,7 +155,7 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
       if (summaryRes.error) throw summaryRes.error;
 
       // alert("Quiz set saved successfully!");
-      onSaveComplete?.(quizSetData.id);
+      onSaveComplete?.(quizSetData.id, tags.join(', '));
       onClose();
 
     } catch (error) {
@@ -238,18 +249,24 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
         </div>
 
         {/* Tags */}
-        {/* <div className="mb-4">
+        <div className="mb-4">
           <label className="block text-sm font-medium mb-2">Tags</label>
           <div className="flex gap-2 mb-2">
             <input
               type="text"
               value={newTag}
               onChange={(e) => setNewTag(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && addTag()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault();
+                  addTag();
+                }
+              }}
               placeholder="Add tag"
               className="flex-1 p-2 bg-gray-700 border border-gray-600 rounded text-white"
             />
             <button
+              type="button"
               onClick={addTag}
               className="px-3 bg-blue-600 hover:bg-blue-700 rounded"
             >
@@ -264,6 +281,7 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
               >
                 {tag}
                 <button
+                  type="button"
                   onClick={() => removeTag(tag)}
                   className="ml-1 text-xs hover:text-red-300"
                 >
@@ -272,7 +290,7 @@ const SaveQuizModal = ({ isOpen, onClose, quizSummaryId, quizSummaryTitle, quizD
               </span>
             ))}
           </div>
-        </div> */}
+        </div>
 
         {/* Actions */}
         <div className="flex justify-end gap-3">
